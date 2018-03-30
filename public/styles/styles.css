@@ -1,0 +1,12 @@
+.menu{
+    text-align: center;
+    margin: auto;
+    display: none;
+    height: 75%;
+    width:  75%;
+}
+  
+#canvas-main{
+    height: 75%;
+    width:  75%;
+}
