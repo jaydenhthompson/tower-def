@@ -96,6 +96,7 @@ Game.graphics = (function(){
         ctx.stroke();
     }
 
+    // FOR DEBUGGIN ONLY!!!
     function drawGrid(){
         ctx.beginPath();
         //draw vertical lines

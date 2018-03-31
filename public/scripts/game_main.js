@@ -52,7 +52,7 @@ Game.main = (function(graphics){
 
     function render(){
         graphics.render({
-            // Insert objects to be drawn
+            gameGrid: gameGrid
         });
     }
 
@@ -80,7 +80,12 @@ Game.main = (function(graphics){
     /////////////////////////////////
 
     function initializeGameGrid(){
-
+        for(let i = 0; i < ROWS; i++){
+            gameGrid.push([]);
+            for(let j = 0; j < COLS; j++){
+                gameGrid[i].push(undefined);
+            }
+        }
     }
 
     ////////////////////////////

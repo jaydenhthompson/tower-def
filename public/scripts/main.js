@@ -24,7 +24,7 @@ function showOptionScreen(){
 
 function startGame(){
     mainMenuScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
+    gameScreen.style.display = 'inline';
 
     // Start the game
     Game.main(Game.graphics);
