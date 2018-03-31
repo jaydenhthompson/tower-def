@@ -22,17 +22,12 @@ function showOptionScreen(){
     gameScreen.style.display = 'none';
 }
 
-function startgame(){
+function startGame(){
     mainMenuScreen.style.display = 'none';
-    optionsScreen.style.display = 'none';
     gameScreen.style.display = 'block';
 
     // Start the game
-
     Game.main(Game.graphics);
-
-    // return to main menu after game
-    showMainMenu();
 }
 
 ///////////////////////////////////////////////////

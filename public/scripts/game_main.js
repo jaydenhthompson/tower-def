@@ -6,11 +6,25 @@
 
 Game.main = (function(graphics){
 
-    //////////////////////////////////
-    // Game Main "global" variables //
-    //////////////////////////////////
+    ////////////////////////////////
+    // Game Main "global" objects //
+    ////////////////////////////////
 
-    //TODO
+    // CONSTANTS
+    const COLS = 16;
+    const ROWS = 9;
+    const HEIGHT = document.getElementById('canvas-main').height;
+    const WIDTH = document.getElementById('canvas-main').width;
+    const CELL_WIDTH = WIDTH / COLS;
+    const CELL_HEIGHT = HEIGHT / ROWS;
+
+    // VARIABLES
+    let previousTime = performance.now();
+
+    // ARRAYS
+    let gameGrid = [];
+
+    // OBJECTS
 
     ////////////////////////////////////
     // Functions for processing input //
@@ -43,24 +57,36 @@ Game.main = (function(graphics){
     }
 
     function gameLoop(){
-        processInput();
-        update();
-        render();
-    }
+        let currentTime = performance.now();
+        let elapsedTime = currentTime - previousTime;
 
-    function initialize(){
-        //TODO
+        processInput();
+        update(elapsedTime);
+        render();
+
+        requestAnimationFrame(gameLoop);
     }
 
     ///////////////////////////////////
     // Initialize all game variables //
     ///////////////////////////////////
 
-    initialize();
+    function initialize(){
+        initializeGameGrid();
+    }
+
+    /////////////////////////////////
+    // Initialize Helper Functions //
+    /////////////////////////////////
+
+    function initializeGameGrid(){
+
+    }
 
     ////////////////////////////
     // Get the party started! //
     ////////////////////////////
 
+    initialize();
     requestAnimationFrame(gameLoop);
 });
