@@ -9,15 +9,24 @@
 .game_menu{
     text-align: center;
     margin: auto;
+    height: 100%;
     width: 100%;
 }
 
 #canvas-menu{
-    width: 20%;
+    text-align: left;
+    color: grey;
+    height: 900px;
+    width: 300px;
     float: left;
 }
 
 #canvas-main{
-    width: 80%;
-    float: right;
+    height: 900px;
+    width: 900px;
+    float: left;
+}
+
+#money{
+    font-size: 30px;
 }

@@ -4,6 +4,7 @@
 
 let mainMenuScreen = null;
 let optionsScreen = null;
+let creditsScreen = null;
 let gameScreen = null;
 
 ////////////////////
@@ -14,17 +15,22 @@ function showMainMenu(){
     mainMenuScreen.style.display = 'block';
     optionsScreen.style.display = 'none';
     gameScreen.style.display = 'none';
+    creditsScreen.style.display = 'none';
 }
 
 function showOptionScreen(){
     mainMenuScreen.style.display = 'none';
     optionsScreen.style.display = 'block';
-    gameScreen.style.display = 'none';
+}
+
+function showCreditsScreen(){
+    mainMenuScreen.style.display = 'none';
+    creditsScreen.style.display = 'block';
 }
 
 function startGame(){
     mainMenuScreen.style.display = 'none';
-    gameScreen.style.display = 'inline';
+    gameScreen.style.display = 'block';
 
     // Start the game
     Game.main(Game.graphics);
@@ -37,6 +43,7 @@ function startGame(){
 function Main(){
     mainMenuScreen = document.getElementById('mainMenu');
     optionsScreen = document.getElementById('options');
+    creditsScreen = document.getElementById('credits');
     gameScreen = document.getElementById('game');
 
     showMainMenu();

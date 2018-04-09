@@ -10,18 +10,38 @@
       <div id="mainMenu" class="menu">
           <h1>TOWER DEFENSE</h1>
           <input type="button" onclick="startGame()" value="START GAME"><br><br>
-          <input type="button" onclick="showOptionScreen()" value="CREDITS"><br><br>
+          <input type="button" onclick="showOptionScreen()" value="OPTIONS"><br><br>
+          <input type="button" onclick="showCreditsScreen()" value="CREDITS">
       </div>
 
       <div id="options" class="menu">
-          <h1>Credits</h1>
-          <h2>Author: Jayden Thompson</h2>
+          <h1>Options</h1>
+          <h2>Game Options</h2>
+          <h2>Controls</h2>
           <input type="button" onclick="showMainMenu()" value="MAIN MENU"><br><br>
       </div>
 
       <div id="game" class="game_menu">
-          <canvas id="canvas-menu" width = "400" height="900" style="background: #000000;"></canvas>
-          <canvas id="canvas-main" width="1600" height="900"></canvas>
+          <div id="canvas-menu" width = "300" height="900" style="background: #000000;">
+            <h1><u>MENU</u></h1><br>
+            <h2>UNITS:</h2><br>
+            <h3 style="word-spacing:75px;">Ground:&Tab;Air:</h3>
+            <input type="image" title="Cost: 5&#13;&#10;Damage: 10" onclick="changeSelection('ground1')" src="resources/tower-defense-turrets/turret-1-1.png" width="65" height="65">
+            <input type="image" title="Cost: 15&#13;&#10;Damage: 25" onclick="changeSelection('ground2')" src="resources/tower-defense-turrets/turret-2-1.png" width="65" height="65">
+            &nbsp;
+            <input type="image" title="Cost: 10&#13;&#10;Damage: 15" onclick="changeSelection('air1')" src="resources/tower-defense-turrets/turret-3-1.png" width="65" height="65">
+            <input type="image" title="Cost: 25&#13;&#10;Damage: 35" onclick="changeSelection('air2')" src="resources/tower-defense-turrets/turret-5-1.png" width="65" height="65">
+            <br><br>
+            <div id="money"></div>
+          </div>
+          <canvas id="canvas-main" width="900" height="900"></canvas>
+      </div>
+
+      <div id="credits" class="menu">
+        <h1>Credits</h1>
+        <h2>Author: Jayden Thompson</h2>
+        <h2>Art: Silviu Ploisteanu (www.HireFreelanceArtist.com)</h2>
+        <input type="button" onclick="showMainMenu()" value="MAIN MENU"><br><br>
       </div>
 
       <script src="scripts/game_graphics.js"></script>

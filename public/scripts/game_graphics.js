@@ -20,7 +20,13 @@ Game.graphics = (function(){
 
     let canvas = document.getElementById('canvas-main');
     let ctx = canvas.getContext('2d');
-    let particles = [];
+
+    const HEIGHT = canvas.height;
+    const WIDTH = canvas.width;
+    const ROWS = HEIGHT / 50;
+    const COLS = WIDTH / 50;
+    const CELL_WIDTH = WIDTH / COLS;
+    const CELL_HEIGHT = HEIGHT / ROWS;
 
     /////////////////////////////////////////
     // Functions to render dynamic objects //
@@ -38,7 +44,7 @@ Game.graphics = (function(){
 
         background.onload = function(){
             ctx.drawImage(
-                background, 0, 0, background.width, background.height, 0, 0, canvas.width, canvas.height
+                background, 0, 0, background.width, background.height, 0, 0, WIDTH, HEIGHT
             );
         }
     }
@@ -47,11 +53,11 @@ Game.graphics = (function(){
         // Top Left
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(canvas.width * (3/8), 0);
-        ctx.lineTo(canvas.width * (3/8), canvas.height / 9);
-        ctx.lineTo(canvas.width / 16, canvas.height / 9);
-        ctx.lineTo(canvas.width / 16, canvas.height / 3);
-        ctx.lineTo(0, canvas.height / 3);
+        ctx.lineTo(WIDTH / 3, 0);
+        ctx.lineTo(WIDTH / 3, HEIGHT / 9);
+        ctx.lineTo(WIDTH / 9, HEIGHT / 9);
+        ctx.lineTo(WIDTH / 9, HEIGHT / 3);
+        ctx.lineTo(0, HEIGHT / 3);
         ctx.closePath();
         ctx.fillStyle = 'grey';
         ctx.fill();
@@ -61,58 +67,143 @@ Game.graphics = (function(){
 
         //Top Right
         ctx.beginPath();
-        ctx.moveTo(canvas.width - 1, 0);
-        ctx.lineTo(canvas.width - (canvas.width * (3/8)), 0);
-        ctx.lineTo(canvas.width - (canvas.width * (3/8)), canvas.height / 9);
-        ctx.lineTo(canvas.width - (canvas.width / 16), canvas.height / 9);
-        ctx.lineTo(canvas.width - (canvas.width / 16), canvas.height / 3);
-        ctx.lineTo(canvas.width - 1, canvas.height / 3);
+        ctx.moveTo(WIDTH - 1, 0);
+        ctx.lineTo(WIDTH - (WIDTH / 3), 0);
+        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT / 9);
+        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT / 9);
+        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT / 3);
+        ctx.lineTo(WIDTH - 1, HEIGHT / 3);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
         //Bottom Left
         ctx.beginPath();
-        ctx.moveTo(0, canvas.height - 1);
-        ctx.lineTo(canvas.width * (3/8), canvas.height - 1);
-        ctx.lineTo(canvas.width * (3/8), canvas.height - (canvas.height / 9));
-        ctx.lineTo(canvas.width / 16, canvas.height - (canvas.height / 9));
-        ctx.lineTo(canvas.width / 16, canvas.height - (canvas.height / 3));
-        ctx.lineTo(0, canvas.height - (canvas.height / 3));
+        ctx.moveTo(0, HEIGHT - 1);
+        ctx.lineTo(WIDTH / 3, HEIGHT - 1);
+        ctx.lineTo(WIDTH / 3, HEIGHT - (HEIGHT / 9));
+        ctx.lineTo(WIDTH / 9, HEIGHT - (HEIGHT / 9));
+        ctx.lineTo(WIDTH / 9, HEIGHT - (HEIGHT / 3));
+        ctx.lineTo(0, HEIGHT - (HEIGHT / 3));
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
         //Bottom Right
         ctx.beginPath();
-        ctx.moveTo(canvas.width - 1, canvas.height - 1);
-        ctx.lineTo(canvas.width - (canvas.width * (3/8)), canvas.height - 1);
-        ctx.lineTo(canvas.width - (canvas.width * (3/8)), canvas.height - (canvas.height / 9));
-        ctx.lineTo(canvas.width - (canvas.width / 16), canvas.height - (canvas.height / 9));
-        ctx.lineTo(canvas.width - (canvas.width / 16), canvas.height - (canvas.height / 3));
-        ctx.lineTo(canvas.width - 1, canvas.height - (canvas.height / 3));
+        ctx.moveTo(WIDTH - 1, HEIGHT - 1);
+        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT - 1);
+        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT - (HEIGHT / 9));
+        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT - (HEIGHT / 9));
+        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT - (HEIGHT / 3));
+        ctx.lineTo(WIDTH - 1, HEIGHT - (HEIGHT / 3));
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
     }
 
-    // FOR DEBUGGIN ONLY!!!
+    function drawSelectedTurret(turret){
+        if(turret == undefined)return;
+        ctx.beginPath();
+        ctx.strokeStyle='rgb(0, 255, 17)';
+        ctx.lineWidth=3;
+        ctx.fillStyle='rgba(0, 255, 17, 0.1)';
+        ctx.arc(turret.center.x, turret.center.y, turret.radius, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    function drawUnits(matrix){
+        for(let i = 0; i < matrix.length; i++){
+            for(let j = 0; j < matrix[i].length; j++){
+                if(matrix[i][j] === undefined) continue;
+                let base = new Image();
+                base.src = "resources/tower-defense-turrets/turret-base.gif";
+                base.onload = function(){
+                    ctx.drawImage(base, 7.5, 7.5, base.width - 15, base.height - 15, 
+                        i * (WIDTH / COLS), j * (HEIGHT / ROWS), WIDTH / COLS, HEIGHT / ROWS);
+                }
+
+                let turret = new Image();
+                turret.src = matrix[i][j].image;
+                turret.onload = function (){
+                    ctx.save();
+                    ctx.translate(matrix[i][j].center.x, matrix[i][j].center.y);
+                    ctx.rotate((Math.PI / 2) - matrix[i][j].degree);
+                    ctx.translate(-matrix[i][j].center.x, -matrix[i][j].center.y);                    
+                    ctx.drawImage(turret, (i * (WIDTH / COLS)) + 2, (j * (HEIGHT / ROWS)) + 2,
+                     (WIDTH / COLS) - 4, (HEIGHT / ROWS) - 4);
+                    ctx.restore();
+                }
+            }
+        }
+    }
+
+    function drawCreep(creep){
+        let npc = new Image();
+        npc.src = creep.image.render;
+        npc.onload = function (){
+            x = creep.pos.x - (CELL_WIDTH / 2);
+            y = creep.pos.y - (CELL_HEIGHT / 2);
+            ctx.save();
+            ctx.translate(creep.pos.x, creep.pos.y);
+            ctx.rotate((Math.PI * 2) - creep.degree);
+            ctx.translate(-creep.pos.x, -creep.pos.y);                    
+            ctx.drawImage(npc, x, y);
+            ctx.restore();
+        }
+    }
+
+    function drawCreeps(creeps){
+        for(let i = 0; i < creeps.length; i++){
+            drawCreep(creeps[i]);
+        }
+    }
+
+    function drawMoney(money){
+        moneyGui = document.getElementById('money');
+        moneyGui.innerHTML = "Money: " + money;
+    }
+
     function drawGrid(){
         ctx.beginPath();
         //draw vertical lines
-        for(let i = 1; i < 16; i++){
-            ctx.moveTo(canvas.width * (i / 16), 0);
-            ctx.lineTo(canvas.width * (i / 16), canvas.height - 1);
+        for(let i = 2; i < COLS - 1; i++){
+            ctx.moveTo(WIDTH * (i / COLS), 0);
+            ctx.lineTo(WIDTH * (i / COLS), HEIGHT - 1);
         }
 
         //draw horizontal lines
-        for (let i = 1; i < 9; i++){
-            ctx.moveTo(0, canvas.height * (i / 9));
-            ctx.lineTo(canvas.width - 1, canvas.height * (i / 9));
+        for (let i = 2; i < ROWS - 1; i++){
+            ctx.moveTo(0, HEIGHT * (i / ROWS));
+            ctx.lineTo(WIDTH - 1, HEIGHT * (i / ROWS));
         }
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'red';
+        ctx.stroke();
+    }
+
+    // Helper function to determine fire radii
+    function findRadius(){
+        if(currentSelection === 'ground1') return 100;
+        if(currentSelection === 'ground2') return 150;
+        if(currentSelection === 'air1') return 175;
+        if(currentSelection === 'air2') return 200;
+    }
+
+    function highlightSquare(mouse){
+        if(!mouse || !currentSelection) return;
+        if(mouse.x < 2 || mouse.x >= (WIDTH / 50) - 2 || mouse.y < 2 || mouse.y >= (HEIGHT / 50) - 2) return;
+        x = mouse.x * 50;
+        y = mouse.y * 50;
+        ctx.fillStyle = 'rgba(255, 0, 0, .4)';
+        ctx.fillRect(x, y, WIDTH / COLS, HEIGHT / ROWS);
+
+        ctx.beginPath();
+        ctx.strokeStyle='rgb(0, 255, 17)';
+        ctx.lineWidth=3;
+        ctx.arc(x + ((WIDTH / COLS) / 2), y + ((HEIGHT / ROWS) / 2), findRadius(), 0, 2*Math.PI);
         ctx.stroke();
     }
 
@@ -123,8 +214,16 @@ Game.graphics = (function(){
     function render(objects){
         drawBackground();
         drawBounds();
-        //Function for debugging purposes, delete after completion.
-        drawGrid();
+        drawSelectedTurret(objects.selectedTurret);
+        drawUnits(objects.gameGrid);
+        drawCreeps(objects.creeps);
+        drawMoney(objects.money);
+
+        // Draw only if selecting spot for tower
+        if(objects.select){
+            drawGrid();
+            highlightSquare(objects.mouse);
+        }
     }
 
     ////////////////////////////////////////////
