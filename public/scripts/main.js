@@ -33,7 +33,7 @@ function startGame(){
     gameScreen.style.display = 'block';
 
     // Start the game
-    Game.main(Game.graphics);
+    Game.main(Game.graphics, Game.pathfinding);
 }
 
 ///////////////////////////////////////////////////

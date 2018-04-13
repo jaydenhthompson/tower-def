@@ -10,30 +10,23 @@ let currentSelection = undefined;
 //                          //
 //////////////////////////////
 
-Game.main = (function(graphics, settings){
+Game.main = (function(graphics, pathfinder, settings){
 
     ////////////////////////////////
     // Game Main "global" objects //
     ////////////////////////////////
 
     // VARIABLES
-    let canvas = document.getElementById('canvas-main');
     let previousTime = performance.now();
     let currentMousePos = undefined;
     let selectionMode = false;
     let selectedTurret = undefined;
 
     // IN-GAME VARIABLES
-    let money = 50;
+    let money = 10000;
     let round = 1;
 
     // CONSTANTS
-    const HEIGHT = canvas.height;
-    const WIDTH = canvas.width;
-    const COLS = WIDTH / 50;
-    const ROWS = HEIGHT / 50;
-    const CELL_WIDTH = WIDTH / COLS;
-    const CELL_HEIGHT = HEIGHT / ROWS;
 
     // ARRAYS
     let gameGrid = [];
@@ -81,6 +74,58 @@ Game.main = (function(graphics, settings){
         };
     }
 
+    ///////////////////////////////////////////
+    // Functions for placing creeps on board //
+    ///////////////////////////////////////////
+
+    function placeGroundCreep1(pos){
+        creeps.push(ground_creep_1(pos));
+    }
+
+    function placeGroundCreep2(pos){
+        creeps.push(ground_creep_2(pos));
+    }
+
+    function placeAirCreep(pos){
+        creeps.push(air_creep(pos));
+    }
+
+    /////////////////////////////////
+    // Functions for placing units //
+    /////////////////////////////////
+
+    function placeGroundUnit1(pos){
+        if(money < 5) return;
+        money -= 5;
+        gameGrid[pos.x][pos.y] = ground_1(pos);
+        currentSelection = undefined;
+        selectionMode = false;
+    }
+
+    function placeGroundUnit2(pos){
+        if(money < 15) return;
+        money -= 15;
+        gameGrid[pos.x][pos.y] = ground_2(pos);
+        currentSelection = undefined;
+        selectionMode = false;        
+    }
+
+    function placeAirUnit1(pos){
+        if(money < 10) return;
+        money -= 10;
+        gameGrid[pos.x][pos.y] = air_1(pos);
+        currentSelection = undefined;
+        selectionMode = false;        
+    }
+
+    function placeAirUnit2(pos){
+        if(money < 25) return;
+        money -= 25;
+        gameGrid[pos.x][pos.y] = air_2(pos);
+        currentSelection = undefined;
+        selectionMode = false;        
+    }
+
     ////////////////////////////////////
     // Functions for processing input //
     ////////////////////////////////////
@@ -105,134 +150,11 @@ Game.main = (function(graphics, settings){
     // Functions for updating the game //
     /////////////////////////////////////
 
-    ///////////////////////////////////////////
-    // Functions for placing creeps on board //
-    ///////////////////////////////////////////
-
-    function placeGroundCreep1(pos){
-        creeps.push({
-            image:{
-                render: "resources/creep/creep-1-red/1.png",
-                base: "resources/creep/creep-1-red/",
-                current: 0,
-                number: 6,
-                time: 0.0,
-                timings : [1, 0.2, 0.1, 1, 0.1, 0.2]
-            },
-            pos: pos,
-            degree: 0
-        });
-    }
-
-    function placeGroundCreep2(pos){
-        creeps.push({
-            image:{
-                render: "resources/creep/creep-2-green/1.png",
-                base: "resources/creep/creep-2-green/",
-                current: 0,
-                number: 4,
-                time: 0.0,
-                timings : [0.2, 1, 0.2, 0.6]
-            },
-            pos: pos,
-            degree: Math.PI / 2
-        });
-    }
-
-    function placeAirCreep(pos){
-        creeps.push({
-            image:{
-                render: "resources/creep/creep-3-blue/1.png",
-                base: "resources/creep/creep-3-blue/",
-                current: 0,
-                number: 4,
-                time: 0.0,
-                timings : [1, 0.2, 0.2, 0.2]
-            },
-            pos: pos,
-            degree: Math.PI
-        });
-    }
-
-    /////////////////////////////////
-    // Functions for placing units //
-    /////////////////////////////////
-
-    function placeGroundUnit1(pos){
-        if(money < 5) return;
-        money -= 5;
-        gameGrid[pos.x][pos.y] = {
-            image: 'resources/tower-defense-turrets/turret-1-1.png',
-            center: {
-                x: (pos.x * 50) + ((WIDTH / COLS) / 2),
-                y: (pos.y * 50) + ((HEIGHT / ROWS) / 2)
-            },
-            degree: Math.PI / 2,
-            damage: 10,
-            radius: 100
-        }
-        currentSelection = undefined;
-        selectionMode = false;
-    }
-
-    function placeGroundUnit2(pos){
-        if(money < 15) return;
-        money -= 15;
-        gameGrid[pos.x][pos.y] = {
-            image: 'resources/tower-defense-turrets/turret-2-1.png',
-            center: {
-                x: (pos.x * 50) + ((WIDTH / COLS) / 2),
-                y: (pos.y * 50) + ((HEIGHT / ROWS) / 2)
-            },
-            degree: Math.PI / 2,
-            damage: 25,
-            radius: 150
-        }
-        currentSelection = undefined;
-        selectionMode = false;        
-    }
-
-    function placeAirUnit1(pos){
-        if(money < 10) return;
-        money -= 10;
-        gameGrid[pos.x][pos.y] = {
-            image: 'resources/tower-defense-turrets/turret-3-1.png',
-            center: {
-                x: (pos.x * 50) + ((WIDTH / COLS) / 2),
-                y: (pos.y * 50) + ((HEIGHT / ROWS) / 2)
-            },
-            degree: Math.PI / 2,
-            damage: 15,
-            radius: 175
-        }
-        currentSelection = undefined;
-        selectionMode = false;        
-    }
-
-    function placeAirUnit2(pos){
-        if(money < 25) return;
-        money -= 25;
-        gameGrid[pos.x][pos.y] = {
-            level: 1,
-            baseImg: 'resources/tower-defense-turrets/turret-5-',
-            image: 'resources/tower-defense-turrets/turret-5-1.png',
-            center: {
-                x: (pos.x * 50) + ((WIDTH / COLS) / 2),
-                y: (pos.y * 50) + ((HEIGHT / ROWS) / 2)
-            },
-            degree: Math.PI / 2,
-            damage: 35,
-            radius: 200
-        }
-        currentSelection = undefined;
-        selectionMode = false;        
-    }
-
     function updateCreepImages(sec){
         for(let i = 0; i < creeps.length; i++){
             im = creeps[i].image;
             im.time += sec;
-            if(im.time >= im.timings[im.current]/2){
+            if(im.time >= im.timings[im.current]){
                 im.time = 0.0;
                 im.current++;
                 if(im.current >= im.number) im.current = 0;
@@ -280,26 +202,6 @@ Game.main = (function(graphics, settings){
     // Initialize all game variables //
     ///////////////////////////////////
 
-    function initialize(){
-        placeGroundCreep1({
-            x: 450,
-            y: 450
-        });
-        placeGroundCreep2({
-            x: 450,
-            y: 350
-        });
-        placeAirCreep({
-            x: 450,
-            y: 550
-        })
-        initializeGameGrid();
-    }
-
-    /////////////////////////////////
-    // Initialize Helper Functions //
-    /////////////////////////////////
-
     function initializeGameGrid(){
         for(let i = 0; i < ROWS; i++){
             gameGrid.push([]);
@@ -307,6 +209,18 @@ Game.main = (function(graphics, settings){
                 gameGrid[i].push(undefined);
             }
         }
+    }
+
+    /////////////////////////////////
+    // Initialize Helper Functions //
+    /////////////////////////////////
+
+    function initialize(){
+        placeGroundCreep2({
+            x: 450,
+            y: 450
+        });
+        initializeGameGrid();
     }
 
     ////////////////////////////

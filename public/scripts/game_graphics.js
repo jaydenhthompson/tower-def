@@ -6,6 +6,22 @@
 
 let Game = {}
 
+/////////////////////////////////
+//                             //
+//     Global Game Objects     //
+//                             //
+/////////////////////////////////
+
+let canvas = document.getElementById('canvas-main');
+let ctx = canvas.getContext('2d');
+
+const HEIGHT = canvas.height;
+const WIDTH = canvas.width;
+const ROWS = HEIGHT / 50;
+const COLS = WIDTH / 50;
+const CELL_WIDTH = WIDTH / COLS;
+const CELL_HEIGHT = HEIGHT / ROWS;
+
 //////////////////////////////////////////
 //                                      //
 // Creates game rendering functionality //
@@ -17,16 +33,6 @@ Game.graphics = (function(){
     ////////////////////////
     // Function variables //
     ////////////////////////
-
-    let canvas = document.getElementById('canvas-main');
-    let ctx = canvas.getContext('2d');
-
-    const HEIGHT = canvas.height;
-    const WIDTH = canvas.width;
-    const ROWS = HEIGHT / 50;
-    const COLS = WIDTH / 50;
-    const CELL_WIDTH = WIDTH / COLS;
-    const CELL_HEIGHT = HEIGHT / ROWS;
 
     /////////////////////////////////////////
     // Functions to render dynamic objects //
