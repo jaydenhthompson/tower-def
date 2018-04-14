@@ -14,6 +14,7 @@ let Game = {}
 
 let canvas = document.getElementById('canvas-main');
 let ctx = canvas.getContext('2d');
+let sounds = true;
 
 const HEIGHT = canvas.height;
 const WIDTH = canvas.width;
@@ -136,10 +137,24 @@ Game.graphics = (function(){
     function drawProjectiles(projectiles){
         for(let i = 0; i < projectiles.length; i++){
             let cur = projectiles[i]
+            let rad = 3;
             ctx.beginPath();
-            ctx.fillStyle='green';
+            ctx.lineWidth = 1;
+            if(cur.type === "lazer"){
+                ctx.fillStyle='green';
+                ctx.strokeStyle = 'blue';
+            }else if (cur.type === "bomb"){
+                ctx.fillStyle = 'red'
+                rad = 5
+                ctx.strokeStyle = 'orange';
+                ctx.lineWidth = 2;
+            }else{
+                ctx.fillStyle = 'orange';
+                ctx.strokeStyle = 'red';
+            }
             ctx.arc(cur.pos.x, cur.pos.y, 3, 0, 2*Math.PI);
             ctx.fill();
+            ctx.stroke();
         }
     }
 
@@ -191,9 +206,19 @@ Game.graphics = (function(){
         }
     }
 
+    function drawLevel(level){
+        levelGui = document.getElementById('level');
+        levelGui.innerHTML = "Level: " + level;
+    }
+
     function drawMoney(money){
         moneyGui = document.getElementById('money');
         moneyGui.innerHTML = "Money: " + money;
+    }
+
+    function drawLives(lives){
+        livesGui = document.getElementById('lives');
+        livesGui.innerHTML = "Lives: " + lives;
     }
 
     function drawGrid(){
@@ -250,7 +275,9 @@ Game.graphics = (function(){
         drawProjectiles(objects.projectiles);
         drawUnits(objects.gameGrid);
         drawCreeps(objects.creeps);
+        drawLevel(objects.level);
         drawMoney(objects.money);
+        drawLives(objects.lives);
 
         // Draw only if selecting spot for tower
         if(objects.select){

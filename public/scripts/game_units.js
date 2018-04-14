@@ -12,7 +12,7 @@ function ground_1(pos){
         radius: 100,
         reload: 0,
         relode_time: 1,
-        projectile_type: 'bullet',
+        projectile_type: 'lazer',
         type: 'ground'
     }
 }
@@ -50,7 +50,7 @@ function air_1(pos){
         radius: 175,
         reload: 0,
         relode_time: 1,
-        projectile_type: 'bullet',
+        projectile_type: 'lazer',
         type: 'air'
     }
 }

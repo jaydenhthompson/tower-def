@@ -24,7 +24,8 @@ Game.main = (function(graphics, pathfinder, settings){
 
     // IN-GAME VARIABLES
     let money = 10000;
-    let round = 1;
+    let lives = 10;
+    let level = 1;
 
     // CONSTANTS
 
@@ -148,8 +149,14 @@ Game.main = (function(graphics, pathfinder, settings){
     }
 
     /////////////////////////////////////
+    //                                 //
     // Functions for updating the game //
+    //                                 //
     /////////////////////////////////////
+
+    ///////////////////
+    // Update Creeps //
+    ///////////////////
 
     function updateCreepImages(sec){
         for(let i = 0; i < creeps.length; i++){
@@ -164,7 +171,31 @@ Game.main = (function(graphics, pathfinder, settings){
         }
     }
 
-    function shootProjectiles(turret){
+    function checkCreeps(){
+        for(let i = 0; i < creeps.length; i++){
+            if(creeps[i].life <= 0){
+                creeps.splice(i, 1);
+            }
+        }
+    }
+
+    ////////////////////////
+    // Update Projectiles //
+    ////////////////////////
+
+    function shootProjectiles(turret, distance, creep){
+        if(sounds){
+            let audio = new Audio();
+            if(turret.projectile_type === 'lazer'){
+                audio.src = "resources/sounds/lazer.wav";
+            }else if(turret.projectile_type === 'bomb'){
+                audio.src = "resources/sounds/bomb.wav";
+            }else{
+                audio.src = "resources/sounds/rocket.wav";
+            }
+            audio.type = "audio/wav";
+            audio.play();
+        }
         projectiles.push({
             pos: {
                 x: turret.center.x,
@@ -173,9 +204,11 @@ Game.main = (function(graphics, pathfinder, settings){
             angle: turret.degree,
             type: turret.projectile_type,
             distance: 0,
-            max_distance: turret.radius,
-            speed: 500
-        })
+            max_distance: distance,
+            speed: 500,
+            damage: turret.damage,
+            creep: creep
+        });
     }
 
     function updateProjectiles(sec){
@@ -186,12 +219,17 @@ Game.main = (function(graphics, pathfinder, settings){
             cur.distance += Math.sqrt(Math.pow(x_comp, 2) + Math.pow(y_comp, 2));
             cur.pos.x += x_comp;
             cur.pos.y -= y_comp;
-            if(cur.pos.x < 0 || cur.pos.x > WIDTH || cur.pos.y < 0 || cur.pos.y > HEIGHT || cur.distance >= cur.max_distance){
+            if(cur.distance >= cur.max_distance){
+                cur.creep.life -= cur.damage;
                 projectiles.splice(i, 1);
                 i--;
             }
         }
     }
+
+    ////////////////////
+    // Update Turrets //
+    ////////////////////
 
     function dist(a, b){
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
@@ -220,20 +258,51 @@ Game.main = (function(graphics, pathfinder, settings){
         }
     }
 
-    function fireTurret(turret, sec){
+    function fireTurret(turret, target, sec){
         if(turret.reload <= 0){
             turret.reload = turret.relode_time
-            shootProjectiles(turret);
+            shootProjectiles(turret, target.distance, target.creep);
         }else{
             turret.reload -= sec;
         }
     }
 
+    function rotateTurret(turret, angle, sec){
+        potential = .5 * Math.PI * sec;
+        if(Math.abs(turret.degree - angle) <= potential){
+            turret.degree = angle;
+            return;
+        }
+        if(turret.degree < angle){
+            if(angle - turret.degree > Math.PI){
+                turret.degree -= potential;
+            }else{
+                turret.degree += potential;
+            }
+        }else{
+            if(turret.degree - angle > Math.PI){
+                turret.degree += potential;
+            }else{
+                turret.degree -= potential;
+            }
+        }
+        if(turret.degree < 0) turret.degree = (2 * Math.PI) + turret.degree;
+        if(turret.degree > 2 * Math.PI) turret.degree = 0 + (turret.degree - (2*Math.PI));
+    }
+
     function aimTurret(turret, sec){
         let target = findClosestCreep(turret);
+        if(!target) return;
         if(target.creep === undefined) return;
         if(target.distance > turret.radius) return;
-
+        let x_diff = target.creep.pos.x - turret.center.x;
+        let y_diff = target.creep.pos.y - turret.center.y;
+        let target_angle = Math.atan2(-y_diff, x_diff);
+        if(target_angle < 0) target_angle = ((2 * Math.PI) - Math.abs(target_angle));
+        if(Math.abs(turret.degree - target_angle) < Math.PI / 20){
+            fireTurret(turret, target, sec);
+        }
+        rotateTurret(turret, target_angle, sec);
     }
 
     function updateTurrets(sec){
@@ -255,9 +324,12 @@ Game.main = (function(graphics, pathfinder, settings){
     }
 
     function update(elapsedTime){
-        updateCreepImages(elapsedTime / 1000);
         updateTurrets(elapsedTime / 1000);
         updateProjectiles(elapsedTime / 1000);
+        if(creeps.length){
+            updateCreepImages(elapsedTime / 1000);
+            checkCreeps();
+        }
     }
 
     function render(){
@@ -268,7 +340,9 @@ Game.main = (function(graphics, pathfinder, settings){
             money: money,
             creeps: creeps,
             selectedTurret: selectedTurret,
-            projectiles: projectiles
+            projectiles: projectiles,
+            lives: lives,
+            level: level
         });
     }
 

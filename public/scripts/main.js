@@ -36,6 +36,9 @@ function startGame(){
     Game.main(Game.graphics, Game.pathfinding);
 }
 
+function toggleSound(){
+    sounds ? sounds = false : sounds = true;
+}
 ///////////////////////////////////////////////////
 // Main function to control menus and start game //
 ///////////////////////////////////////////////////

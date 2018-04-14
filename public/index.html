@@ -24,15 +24,19 @@
       <div id="game" class="game_menu">
           <div id="canvas-menu" width = "300" height="900" style="background: #000000;">
             <h1><u>MENU</u></h1><br>
-            <h2>UNITS:</h2><br>
+            <h2>UNITS:</h2>
             <h3 style="word-spacing:75px;">Ground:&Tab;Air:</h3>
             <input type="image" title="Cost: 5&#13;&#10;Damage: 10" onclick="changeSelection('ground1')" src="resources/tower-defense-turrets/turret-1-1.png" width="65" height="65">
             <input type="image" title="Cost: 15&#13;&#10;Damage: 25" onclick="changeSelection('ground2')" src="resources/tower-defense-turrets/turret-2-1.png" width="65" height="65">
             &nbsp;
             <input type="image" title="Cost: 10&#13;&#10;Damage: 15" onclick="changeSelection('air1')" src="resources/tower-defense-turrets/turret-3-1.png" width="65" height="65">
             <input type="image" title="Cost: 25&#13;&#10;Damage: 35" onclick="changeSelection('air2')" src="resources/tower-defense-turrets/turret-5-1.png" width="65" height="65">
-            <br><br>
-            <div id="money"></div>
+            <br><br><br><br>
+            <div class="gameGui" id="level"></div>
+            <div class="gameGui" id="money"></div>
+            <div class="gameGui" id="lives"></div>
+            <br>
+            <input type="button" onclick="toggleSound()" value="Toggle Sound">
           </div>
           <canvas id="canvas-main" width="900" height="900"></canvas>
       </div>
