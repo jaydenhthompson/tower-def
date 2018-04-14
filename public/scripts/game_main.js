@@ -31,6 +31,7 @@ Game.main = (function(graphics, pathfinder, settings){
     // ARRAYS
     let gameGrid = [];
     let creeps = [];
+    let projectiles = [];
 
     // OBJECTS
 
@@ -163,6 +164,88 @@ Game.main = (function(graphics, pathfinder, settings){
         }
     }
 
+    function shootProjectiles(turret){
+        projectiles.push({
+            pos: {
+                x: turret.center.x,
+                y: turret.center.y
+            },
+            angle: turret.degree,
+            type: turret.projectile_type,
+            distance: 0,
+            max_distance: turret.radius,
+            speed: 500
+        })
+    }
+
+    function updateProjectiles(sec){
+        for(let i = 0; i < projectiles.length; i++){
+            let cur = projectiles[i];
+            let x_comp = cur.speed * Math.cos(cur.angle) * sec;
+            let y_comp = cur.speed * Math.sin(cur.angle) * sec;
+            cur.distance += Math.sqrt(Math.pow(x_comp, 2) + Math.pow(y_comp, 2));
+            cur.pos.x += x_comp;
+            cur.pos.y -= y_comp;
+            if(cur.pos.x < 0 || cur.pos.x > WIDTH || cur.pos.y < 0 || cur.pos.y > HEIGHT || cur.distance >= cur.max_distance){
+                projectiles.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    function dist(a, b){
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+    }
+
+    function findClosestCreep(turret){
+        if(!creeps.length) return;
+        let target = creeps[0];
+        let distance = dist(turret.center, target.pos);
+        if(turret.type !== target.type){
+            target = undefined;
+            distance = WIDTH;
+        }
+        for(let i = 1; i < creeps.length; i++){
+            let creep = creeps[i];
+            if(turret.type !== creep.type) continue;
+            let temp = dist(turret.center, creep.pos);
+            if(distance > temp){
+                distance = temp;
+                target = creep;
+            }
+        }
+        return{
+            creep: target,
+            distance: distance
+        }
+    }
+
+    function fireTurret(turret, sec){
+        if(turret.reload <= 0){
+            turret.reload = turret.relode_time
+            shootProjectiles(turret);
+        }else{
+            turret.reload -= sec;
+        }
+    }
+
+    function aimTurret(turret, sec){
+        let target = findClosestCreep(turret);
+        if(target.creep === undefined) return;
+        if(target.distance > turret.radius) return;
+
+    }
+
+    function updateTurrets(sec){
+        for(let i = 0; i < ROWS; i++){
+            for(let j = 0; j < COLS; j++){
+                let turret = gameGrid[i][j];
+                if(turret === undefined) continue;
+                aimTurret(turret, sec);
+            }
+        }
+    }
+
     /////////////////////////
     // Main Game Functions //
     /////////////////////////
@@ -173,6 +256,8 @@ Game.main = (function(graphics, pathfinder, settings){
 
     function update(elapsedTime){
         updateCreepImages(elapsedTime / 1000);
+        updateTurrets(elapsedTime / 1000);
+        updateProjectiles(elapsedTime / 1000);
     }
 
     function render(){
@@ -182,7 +267,8 @@ Game.main = (function(graphics, pathfinder, settings){
             select: selectionMode,
             money: money,
             creeps: creeps,
-            selectedTurret: selectedTurret
+            selectedTurret: selectedTurret,
+            projectiles: projectiles
         });
     }
 
@@ -219,6 +305,10 @@ Game.main = (function(graphics, pathfinder, settings){
         placeGroundCreep2({
             x: 450,
             y: 450
+        });
+        placeAirCreep({
+            x: 450,
+            y: 350
         });
         initializeGameGrid();
     }

@@ -9,7 +9,11 @@ function ground_1(pos){
         },
         degree: Math.PI / 2,
         damage: 10,
-        radius: 100
+        radius: 100,
+        reload: 0,
+        relode_time: 1,
+        projectile_type: 'bullet',
+        type: 'ground'
     }
 }
 
@@ -24,7 +28,11 @@ function ground_2(pos){
         },
         degree: Math.PI / 2,
         damage: 25,
-        radius: 150
+        radius: 150,
+        reload: 0,
+        relode_time: 2,
+        projectile_type: 'bomb',
+        type: 'ground'
     }
 }
 
@@ -39,7 +47,11 @@ function air_1(pos){
         },
         degree: Math.PI / 2,
         damage: 15,
-        radius: 175
+        radius: 175,
+        reload: 0,
+        relode_time: 1,
+        projectile_type: 'bullet',
+        type: 'air'
     }
 }
 
@@ -54,7 +66,11 @@ function air_2(pos){
         },
         degree: Math.PI / 2,
         damage: 35,
-        radius: 200
+        radius: 200,
+        reload: 0,
+        relode_time: 3,
+        projectile_type: 'missile',
+        type: 'air'
     }
 }
 
@@ -70,7 +86,8 @@ function ground_creep_1(pos){
         },
         pos: pos,
         degree: 0,
-        life: 100
+        life: 100,
+        type: 'ground'
     }
 }
 
@@ -86,7 +103,8 @@ function ground_creep_2(pos){
         },
         pos: pos,
         degree: 0, 
-        life: 100
+        life: 100,
+        type: 'ground'
     }
 }
 
@@ -102,6 +120,7 @@ function air_creep(pos){
         },
         pos: pos,
         degree: 0,
-        life: 100
+        life: 100,
+        type: 'air'
     }
 }

@@ -6,7 +6,7 @@
 
 Game.pathfinding = (function(){
     function distance(start, end){
-        return abs(start.x - end.x) + abs(start.y - end.y);
+        return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
     }
 
     function findNeighbors(pos){
@@ -18,7 +18,7 @@ Game.pathfinding = (function(){
     }
 
     function findPath(gameGrid, start, end){
-
+        let gridSize = COLS * ROWS;
     }
 
     return{

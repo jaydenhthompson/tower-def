@@ -119,7 +119,7 @@ Game.graphics = (function(){
         ctx.stroke();
     }
 
-    function drawUnits(matrix){
+    function drawBases(matrix){
         for(let i = 0; i < matrix.length; i++){
             for(let j = 0; j < matrix[i].length; j++){
                 if(matrix[i][j] === undefined) continue;
@@ -129,7 +129,24 @@ Game.graphics = (function(){
                     ctx.drawImage(base, 7.5, 7.5, base.width - 15, base.height - 15, 
                         i * (WIDTH / COLS), j * (HEIGHT / ROWS), WIDTH / COLS, HEIGHT / ROWS);
                 }
+            }
+        }
+    }
 
+    function drawProjectiles(projectiles){
+        for(let i = 0; i < projectiles.length; i++){
+            let cur = projectiles[i]
+            ctx.beginPath();
+            ctx.fillStyle='green';
+            ctx.arc(cur.pos.x, cur.pos.y, 3, 0, 2*Math.PI);
+            ctx.fill();
+        }
+    }
+
+    function drawUnits(matrix){
+        for(let i = 0; i < matrix.length; i++){
+            for(let j = 0; j < matrix[i].length; j++){
+                if(matrix[i][j] === undefined) continue;
                 let turret = new Image();
                 turret.src = matrix[i][j].image;
                 turret.onload = function (){
@@ -146,11 +163,12 @@ Game.graphics = (function(){
     }
 
     function drawCreep(creep){
+        // Draw Actual Creep
         let npc = new Image();
         npc.src = creep.image.render;
+        let x = creep.pos.x - (CELL_WIDTH / 2);
+        let y = creep.pos.y - (CELL_HEIGHT / 2);
         npc.onload = function (){
-            x = creep.pos.x - (CELL_WIDTH / 2);
-            y = creep.pos.y - (CELL_HEIGHT / 2);
             ctx.save();
             ctx.translate(creep.pos.x, creep.pos.y);
             ctx.rotate((Math.PI * 2) - creep.degree);
@@ -158,6 +176,13 @@ Game.graphics = (function(){
             ctx.drawImage(npc, x, y);
             ctx.restore();
         }
+
+        // Draw health bar
+        let percent = creep.life / 100;
+        ctx.fillStyle = 'rgb(81, 81, 81)';
+        ctx.fillRect(x, y - 7, CELL_WIDTH, 5);
+        ctx.fillStyle = 'rgb(61, 135, 255)';
+        ctx.fillRect(x, y - 7, CELL_WIDTH * percent, 5);
     }
 
     function drawCreeps(creeps){
@@ -221,6 +246,8 @@ Game.graphics = (function(){
         drawBackground();
         drawBounds();
         drawSelectedTurret(objects.selectedTurret);
+        drawBases(objects.gameGrid);
+        drawProjectiles(objects.projectiles);
         drawUnits(objects.gameGrid);
         drawCreeps(objects.creeps);
         drawMoney(objects.money);
