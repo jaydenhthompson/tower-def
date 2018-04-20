@@ -10,7 +10,7 @@ let currentSelection = undefined;
 //                          //
 //////////////////////////////
 
-Game.main = (function(graphics, pathfinder, settings){
+Game.main = (function (graphics, pathfinder, particles) {
 
     ////////////////////////////////
     // Game Main "global" objects //
@@ -21,11 +21,13 @@ Game.main = (function(graphics, pathfinder, settings){
     let currentMousePos = undefined;
     let selectionMode = false;
     let selectedTurret = undefined;
+    let run = true;
 
     // IN-GAME VARIABLES
     let money = 10000;
     let lives = 10;
     let level = 1;
+    let score = 0;
 
     // CONSTANTS
 
@@ -37,38 +39,52 @@ Game.main = (function(graphics, pathfinder, settings){
     // OBJECTS
 
     // LISTENERS
-    canvas.addEventListener('mousemove', function(e){
+    canvas.addEventListener('mousemove', function (e) {
         mousePosition(e);
     }, false);
 
-    canvas.addEventListener('click', function(e){
+    canvas.addEventListener('click', function (e) {
         clickSelection(e);
     }, false);
 
-    //canvas.addEventListener('mouseclick', )
+    document.addEventListener('keydown', keyPress);
+    document.addEventListener('keyup', keyRelease);
+
+    let keyInput = {
+        keys: {},
+        handlers: {}
+    }
 
     ////////////////////////////////////
     // Functions for collecting input //
     ////////////////////////////////////
 
-    function clickSelection(e){
+    function keyPress(e) {
+        keyInput.keys[e.key] = e.timeStamp;
+    }
+
+    function keyRelease(e) {
+        delete keyInput.keys[e.key];
+    }
+
+    function clickSelection(e) {
         // Check if tower placement is valid
-        if(currentSelection === undefined){
+        if (currentSelection === undefined) {
             selectTurret();
             return;
         }
-        if(currentMousePos.x < 2 || currentMousePos.x >= COLS - 2 || 
+        if (currentMousePos.x < 2 || currentMousePos.x >= COLS - 2 ||
             currentMousePos.y < 2 || currentMousePos.y >= ROWS - 2) return;
-        if(gameGrid[currentMousePos.x][currentMousePos.y] !== undefined) return;
+        if (gameGrid[currentMousePos.x][currentMousePos.y] !== undefined) return;
 
         // Check the type of tower selected
-        if(currentSelection === 'ground1') placeGroundUnit1(currentMousePos);
-        else if(currentSelection === 'ground2') placeGroundUnit2(currentMousePos);
-        else if(currentSelection === 'air1') placeAirUnit1(currentMousePos);
-        else if(currentSelection === 'air2') placeAirUnit2(currentMousePos);
+        if (currentSelection === 'ground1') placeGroundUnit1(currentMousePos);
+        else if (currentSelection === 'ground2') placeGroundUnit2(currentMousePos);
+        else if (currentSelection === 'air1') placeAirUnit1(currentMousePos);
+        else if (currentSelection === 'air2') placeAirUnit2(currentMousePos);
     }
 
-    function mousePosition(e){
+    function mousePosition(e) {
         var window = canvas.getBoundingClientRect();
         currentMousePos = {
             x: Math.floor((e.clientX - window.left) / 50),
@@ -80,15 +96,15 @@ Game.main = (function(graphics, pathfinder, settings){
     // Functions for placing creeps on board //
     ///////////////////////////////////////////
 
-    function placeGroundCreep1(pos){
+    function placeGroundCreep1(pos) {
         creeps.push(ground_creep_1(pos));
     }
 
-    function placeGroundCreep2(pos){
+    function placeGroundCreep2(pos) {
         creeps.push(ground_creep_2(pos));
     }
 
-    function placeAirCreep(pos){
+    function placeAirCreep(pos) {
         creeps.push(air_creep(pos));
     }
 
@@ -96,56 +112,86 @@ Game.main = (function(graphics, pathfinder, settings){
     // Functions for placing units //
     /////////////////////////////////
 
-    function placeGroundUnit1(pos){
-        if(money < 5) return;
+    function placeGroundUnit1(pos) {
+        if (money < 5) return;
         money -= 5;
+        score += 5;
         gameGrid[pos.x][pos.y] = ground_1(pos);
         currentSelection = undefined;
         selectionMode = false;
     }
 
-    function placeGroundUnit2(pos){
-        if(money < 15) return;
+    function placeGroundUnit2(pos) {
+        if (money < 15) return;
         money -= 15;
+        score += 15;
         gameGrid[pos.x][pos.y] = ground_2(pos);
         currentSelection = undefined;
-        selectionMode = false;        
+        selectionMode = false;
     }
 
-    function placeAirUnit1(pos){
-        if(money < 10) return;
+    function placeAirUnit1(pos) {
+        if (money < 10) return;
         money -= 10;
+        score += 10;
         gameGrid[pos.x][pos.y] = air_1(pos);
         currentSelection = undefined;
-        selectionMode = false;        
+        selectionMode = false;
     }
 
-    function placeAirUnit2(pos){
-        if(money < 25) return;
+    function placeAirUnit2(pos) {
+        if (money < 25) return;
         money -= 25;
+        score += 25;
         gameGrid[pos.x][pos.y] = air_2(pos);
         currentSelection = undefined;
-        selectionMode = false;        
+        selectionMode = false;
     }
 
     ////////////////////////////////////
     // Functions for processing input //
     ////////////////////////////////////
-    function selectTurret(){
-        if(gameGrid[currentMousePos.x][currentMousePos.y] == undefined) return;
-        if(selectedTurret == gameGrid[currentMousePos.x][currentMousePos.y]){
+    function selectTurret() {
+        if (gameGrid[currentMousePos.x][currentMousePos.y] == undefined) return;
+        if (selectedTurret == gameGrid[currentMousePos.x][currentMousePos.y]) {
             selectedTurret = undefined;
-        }else{
+        } else {
             selectedTurret = gameGrid[currentMousePos.x][currentMousePos.y];
         }
     }
 
-    function checkTowerSelection(){
-        if(currentSelection === undefined){
+    function checkTowerSelection() {
+        if (currentSelection === undefined) {
             selectionMode = false;
             return;
         }
+        selectedTurret = undefined;
         selectionMode = true;
+    }
+
+    function upgradeSelected() {
+        if (selectedTurret === undefined) return;
+        if (selectedTurret.level >= 3) return;
+        if (money < 10 * selectedTurret.level) return;
+        money -= 10 * selectedTurret.level;
+        score += 10 * selectedTurret.level;
+        selectedTurret.value += 10 * selectedTurret.level;
+        selectedTurret.level += 1;
+        selectedTurret.image = selectedTurret.baseImg + selectedTurret.level + ".png";
+        selectedTurret.damage += selectedTurret.level * 10;
+        selectedTurret = undefined;
+    }
+
+    function sellSelected() {
+        if (selectedTurret === undefined) return;
+        money += selectedTurret.value;
+        score -= selectedTurret.value;
+        gameGrid[selectedTurret.pos.x][selectedTurret.pos.y] = undefined;
+        selectedTurret = undefined;
+    }
+
+    function startNextLevel() {
+
     }
 
     /////////////////////////////////////
@@ -158,22 +204,34 @@ Game.main = (function(graphics, pathfinder, settings){
     // Update Creeps //
     ///////////////////
 
-    function updateCreepImages(sec){
-        for(let i = 0; i < creeps.length; i++){
+    function updateCreepImages(sec) {
+        for (let i = 0; i < creeps.length; i++) {
             im = creeps[i].image;
             im.time += sec;
-            if(im.time >= im.timings[im.current]){
+            if (im.time >= im.timings[im.current]) {
                 im.time = 0.0;
                 im.current++;
-                if(im.current >= im.number) im.current = 0;
+                if (im.current >= im.number) im.current = 0;
                 im.render = im.base + (im.current + 1) + ".png";
             }
         }
     }
 
-    function checkCreeps(){
-        for(let i = 0; i < creeps.length; i++){
-            if(creeps[i].life <= 0){
+    function checkCreeps() {
+        for (let i = 0; i < creeps.length; i++) {
+            if (creeps[i].life <= 0) {
+                if (sounds) {
+                    let audio = new Audio();
+                    audio.src = "resources/sounds/explosion.wav"
+                    audio.type = "audio/wav";
+                    audio.play();
+                }
+                score += 5;
+                money += 5;
+                creeps.splice(i, 1);
+            }
+            if (creeps[i].pos.x >= WIDTH || creeps[i].pos.y >= HEIGHT) {
+                lives--;
                 creeps.splice(i, 1);
             }
         }
@@ -183,14 +241,14 @@ Game.main = (function(graphics, pathfinder, settings){
     // Update Projectiles //
     ////////////////////////
 
-    function shootProjectiles(turret, distance, creep){
-        if(sounds){
+    function shootProjectiles(turret, distance, creep) {
+        if (sounds) {
             let audio = new Audio();
-            if(turret.projectile_type === 'lazer'){
+            if (turret.projectile_type === 'lazer') {
                 audio.src = "resources/sounds/lazer.wav";
-            }else if(turret.projectile_type === 'bomb'){
+            } else if (turret.projectile_type === 'bomb') {
                 audio.src = "resources/sounds/bomb.wav";
-            }else{
+            } else {
                 audio.src = "resources/sounds/rocket.wav";
             }
             audio.type = "audio/wav";
@@ -211,15 +269,15 @@ Game.main = (function(graphics, pathfinder, settings){
         });
     }
 
-    function updateProjectiles(sec){
-        for(let i = 0; i < projectiles.length; i++){
+    function updateProjectiles(sec) {
+        for (let i = 0; i < projectiles.length; i++) {
             let cur = projectiles[i];
             let x_comp = cur.speed * Math.cos(cur.angle) * sec;
             let y_comp = cur.speed * Math.sin(cur.angle) * sec;
             cur.distance += Math.sqrt(Math.pow(x_comp, 2) + Math.pow(y_comp, 2));
             cur.pos.x += x_comp;
             cur.pos.y -= y_comp;
-            if(cur.distance >= cur.max_distance){
+            if (cur.distance >= cur.max_distance) {
                 cur.creep.life -= cur.damage;
                 projectiles.splice(i, 1);
                 i--;
@@ -231,108 +289,163 @@ Game.main = (function(graphics, pathfinder, settings){
     // Update Turrets //
     ////////////////////
 
-    function dist(a, b){
+    function dist(a, b) {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
-    function findClosestCreep(turret){
-        if(!creeps.length) return;
+    function findClosestCreep(turret) {
+        if (!creeps.length) return;
         let target = creeps[0];
         let distance = dist(turret.center, target.pos);
-        if(turret.type !== target.type){
+        if (turret.type !== target.type) {
             target = undefined;
             distance = WIDTH;
         }
-        for(let i = 1; i < creeps.length; i++){
+        for (let i = 1; i < creeps.length; i++) {
             let creep = creeps[i];
-            if(turret.type !== creep.type) continue;
+            if (turret.type !== creep.type) continue;
             let temp = dist(turret.center, creep.pos);
-            if(distance > temp){
+            if (distance > temp) {
                 distance = temp;
                 target = creep;
             }
         }
-        return{
+        return {
             creep: target,
             distance: distance
         }
     }
 
-    function fireTurret(turret, target, sec){
-        if(turret.reload <= 0){
+    function fireTurret(turret, target, sec) {
+        if (turret.reload <= 0) {
             turret.reload = turret.relode_time
             shootProjectiles(turret, target.distance, target.creep);
-        }else{
-            turret.reload -= sec;
         }
     }
 
-    function rotateTurret(turret, angle, sec){
-        potential = .5 * Math.PI * sec;
-        if(Math.abs(turret.degree - angle) <= potential){
+    function rotateTurret(turret, angle, sec) {
+        potential = .75 * Math.PI * sec;
+        if (Math.abs(turret.degree - angle) <= potential) {
             turret.degree = angle;
             return;
         }
-        if(turret.degree < angle){
-            if(angle - turret.degree > Math.PI){
+        if (turret.degree < angle) {
+            if (angle - turret.degree > Math.PI) {
                 turret.degree -= potential;
-            }else{
+            } else {
                 turret.degree += potential;
             }
-        }else{
-            if(turret.degree - angle > Math.PI){
+        } else {
+            if (turret.degree - angle > Math.PI) {
                 turret.degree += potential;
-            }else{
+            } else {
                 turret.degree -= potential;
             }
         }
-        if(turret.degree < 0) turret.degree = (2 * Math.PI) + turret.degree;
-        if(turret.degree > 2 * Math.PI) turret.degree = 0 + (turret.degree - (2*Math.PI));
+        if (turret.degree < 0) turret.degree = (2 * Math.PI) + turret.degree;
+        if (turret.degree > 2 * Math.PI) turret.degree = 0 + (turret.degree - (2 * Math.PI));
     }
 
-    function aimTurret(turret, sec){
+    function aimTurret(turret, sec) {
         let target = findClosestCreep(turret);
-        if(!target) return;
-        if(target.creep === undefined) return;
-        if(target.distance > turret.radius) return;
+        if (!target) return;
+        if (target.creep === undefined) return;
+        if (target.distance > turret.radius) return;
         let x_diff = target.creep.pos.x - turret.center.x;
         let y_diff = target.creep.pos.y - turret.center.y;
         let target_angle = Math.atan2(-y_diff, x_diff);
-        if(target_angle < 0) target_angle = ((2 * Math.PI) - Math.abs(target_angle));
-        if(Math.abs(turret.degree - target_angle) < Math.PI / 20){
+        if (target_angle < 0) target_angle = ((2 * Math.PI) - Math.abs(target_angle));
+        if (Math.abs(turret.degree - target_angle) < Math.PI / 16) {
             fireTurret(turret, target, sec);
         }
+        turret.reload -= sec;
         rotateTurret(turret, target_angle, sec);
     }
 
-    function updateTurrets(sec){
-        for(let i = 0; i < ROWS; i++){
-            for(let j = 0; j < COLS; j++){
+    function updateTurrets(sec) {
+        for (let i = 0; i < ROWS; i++) {
+            for (let j = 0; j < COLS; j++) {
                 let turret = gameGrid[i][j];
-                if(turret === undefined) continue;
+                if (turret === undefined) continue;
                 aimTurret(turret, sec);
             }
         }
+    }
+
+    ////////////////////////////
+    // General game functions //
+    ////////////////////////////
+
+    function checkLives() {
+        if (lives <= 0) run = false;
+    }
+
+    function recordHighScores(name) {
+        let scores = [{
+            name: name,
+            score: score
+        }];
+
+        let previousScores = localStorage.getItem('TowerHighScores');
+        if (previousScores !== null) {
+            let highScores = JSON.parse(previousScores);
+            for (let i = 0; i < highScores.length; i++) {
+                scores.push(highScores[i]);
+            }
+        }
+
+        scores.sort(function (a, b) { return a.score - b.score });
+        scores.reverse();
+        scores = scores.slice(0, 10);
+        localStorage['TowerHighScores'] = JSON.stringify(scores);
+    }
+
+    function gameOver() {
+        let name = prompt("GAME OVER...  Enter Your Name", "NAME");
+        recordHighScores(name);
+        showMainMenu();
     }
 
     /////////////////////////
     // Main Game Functions //
     /////////////////////////
 
-    function processInput(){
+    function processInput() {
         checkTowerSelection();
-    }
-
-    function update(elapsedTime){
-        updateTurrets(elapsedTime / 1000);
-        updateProjectiles(elapsedTime / 1000);
-        if(creeps.length){
-            updateCreepImages(elapsedTime / 1000);
-            checkCreeps();
+        for (let key in keyInput.keys) {
+            if (keyInput.handlers[key]) {
+                keyInput.handlers[key]();
+            }
         }
     }
 
-    function render(){
+    let wait = 2;
+    function update(elapsedTime) {
+        updateTurrets(elapsedTime / 1000);
+        updateProjectiles(elapsedTime / 1000);
+        checkLives();
+        if (creeps.length) {
+            updateCreepImages(elapsedTime / 1000);
+            checkCreeps();
+        }
+        for (let i = 0; i < creeps.length; i++) {
+            creeps[i].pos.x += 100 * (elapsedTime / 1000);
+        }
+        if (wait <= 0) {
+            wait = 2;
+            placeGroundCreep2({
+                x: 0,
+                y: 450
+            });
+            placeAirCreep({
+                x: 0,
+                y: 400
+            });
+        }
+        wait -= (elapsedTime / 1000);
+    }
+
+    function render() {
         graphics.render({
             gameGrid: gameGrid,
             mouse: currentMousePos,
@@ -342,11 +455,12 @@ Game.main = (function(graphics, pathfinder, settings){
             selectedTurret: selectedTurret,
             projectiles: projectiles,
             lives: lives,
-            level: level
+            level: level,
+            score: score
         });
     }
 
-    function gameLoop(){
+    function gameLoop() {
         let currentTime = performance.now();
         let elapsedTime = currentTime - previousTime;
         previousTime = currentTime;
@@ -355,36 +469,49 @@ Game.main = (function(graphics, pathfinder, settings){
         update(elapsedTime);
         render();
 
-        requestAnimationFrame(gameLoop);
+        if (run) {
+            requestAnimationFrame(gameLoop);
+        } else {
+            gameOver();
+        }
     }
 
     ///////////////////////////////////
     // Initialize all game variables //
     ///////////////////////////////////
 
-    function initializeGameGrid(){
-        for(let i = 0; i < ROWS; i++){
+    function initializeGameGrid() {
+        for (let i = 0; i < ROWS; i++) {
             gameGrid.push([]);
-            for(let j = 0; j < COLS; j++){
+            for (let j = 0; j < COLS; j++) {
                 gameGrid[i].push(undefined);
             }
         }
     }
 
-    /////////////////////////////////
-    // Initialize Helper Functions //
-    /////////////////////////////////
+    function initializeKeys() {
+        let controls = localStorage.getItem('options');
+        if (controls) options = JSON.parse(controls);
+        keyInput.handlers[options[0]] = upgradeSelected;
+        keyInput.handlers[options[1]] = sellSelected;
+        keyInput.handlers[options[2]] = startNextLevel;
+    }
 
-    function initialize(){
+    ////////////////////////////////
+    // Initialize Helper Function //
+    ////////////////////////////////
+
+    function initialize() {
         placeGroundCreep2({
-            x: 450,
+            x: 0,
             y: 450
         });
         placeAirCreep({
-            x: 450,
-            y: 350
+            x: 0,
+            y: 400
         });
         initializeGameGrid();
+        initializeKeys();
     }
 
     ////////////////////////////
@@ -399,8 +526,8 @@ Game.main = (function(graphics, pathfinder, settings){
 // Functions for menu interaction //
 ////////////////////////////////////
 
-function changeSelection(tower){
-    if(currentSelection === tower){
+function changeSelection(tower) {
+    if (currentSelection === tower) {
         currentSelection = undefined;
         return;
     }

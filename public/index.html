@@ -1,57 +1,100 @@
 <!DOCTYPE html>
 <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Tower Defense</title>
-      <link rel="stylesheet" href="styles/styles.css">
-    </head>
-    <body onload="Main()">
 
-      <div id="mainMenu" class="menu">
-          <h1>TOWER DEFENSE</h1>
-          <input type="button" onclick="startGame()" value="START GAME"><br><br>
-          <input type="button" onclick="showOptionScreen()" value="OPTIONS"><br><br>
-          <input type="button" onclick="showCreditsScreen()" value="CREDITS">
-      </div>
+<head>
+  <meta charset="utf-8">
+  <title>Tower Defense</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
 
-      <div id="options" class="menu">
-          <h1>Options</h1>
-          <h2>Game Options</h2>
-          <h2>Controls</h2>
-          <input type="button" onclick="showMainMenu()" value="MAIN MENU"><br><br>
-      </div>
+<body onload="Main()">
 
-      <div id="game" class="game_menu">
-          <div id="canvas-menu" width = "300" height="900" style="background: #000000;">
-            <h1><u>MENU</u></h1><br>
-            <h2>UNITS:</h2>
-            <h3 style="word-spacing:75px;">Ground:&Tab;Air:</h3>
-            <input type="image" title="Cost: 5&#13;&#10;Damage: 10" onclick="changeSelection('ground1')" src="resources/tower-defense-turrets/turret-1-1.png" width="65" height="65">
-            <input type="image" title="Cost: 15&#13;&#10;Damage: 25" onclick="changeSelection('ground2')" src="resources/tower-defense-turrets/turret-2-1.png" width="65" height="65">
-            &nbsp;
-            <input type="image" title="Cost: 10&#13;&#10;Damage: 15" onclick="changeSelection('air1')" src="resources/tower-defense-turrets/turret-3-1.png" width="65" height="65">
-            <input type="image" title="Cost: 25&#13;&#10;Damage: 35" onclick="changeSelection('air2')" src="resources/tower-defense-turrets/turret-5-1.png" width="65" height="65">
-            <br><br><br><br>
-            <div class="gameGui" id="level"></div>
-            <div class="gameGui" id="money"></div>
-            <div class="gameGui" id="lives"></div>
-            <br>
-            <input type="button" onclick="toggleSound()" value="Toggle Sound">
-          </div>
-          <canvas id="canvas-main" width="900" height="900"></canvas>
-      </div>
+  <div id="mainMenu" class="menu">
+    <h1>TOWER DEFENSE</h1>
+    <input type="button" onclick="startGame()" value="START GAME">
+    <br>
+    <br>
+    <input type="button" onclick="showOptionScreen()" value="OPTIONS">
+    <br>
+    <br>
+    <input type="button" onclick="showHighScoresScreen()" value="HIGH SCORES">
+    <br>
+    <br>
+    <input type="button" onclick="showCreditsScreen()" value="CREDITS">
+  </div>
 
-      <div id="credits" class="menu">
-        <h1>Credits</h1>
-        <h2>Author: Jayden Thompson</h2>
-        <h2>Art: Silviu Ploisteanu (www.HireFreelanceArtist.com)</h2>
-        <input type="button" onclick="showMainMenu()" value="MAIN MENU"><br><br>
-      </div>
+  <div id="options" class="menu">
+    <h1>Options</h1>
+    <h2>Controls</h2>
+    <div id="controls">
+      Upgrade:
+      <input type="text" id="upgrade-control"> Sell:
+      <input type="text" id="sell-control"> Next Round:
+      <input type="text" id="go-control">
+    </div>
+    <input type="button" onclick="saveOptions()" value="SAVE">
+    <input type="button" onclick="showMainMenu()" value="MAIN MENU">
+    <br>
+    <br>
+  </div>
 
-      <script src="scripts/game_graphics.js"></script>
-      <script src="scripts/game_pathfinding.js"></script>
-      <script src="scripts/game_units.js"></script>
-      <script src="scripts/game_main.js"></script>
-      <script src="scripts/main.js"></script>
-    </body>
+  <div id="game" class="game_menu">
+    <div id="canvas-menu" width="300" height="900" style="background: #000000;">
+      <h1>
+        <u>MENU</u>
+      </h1>
+      <br>
+      <h2>UNITS:</h2>
+      <h3 style="word-spacing:75px;">Ground:&Tab;Air:</h3>
+      <input type="image" title="Cost: 5&#13;&#10;Damage: 10" onclick="changeSelection('ground1')" src="resources/tower-defense-turrets/turret-1-1.png"
+        width="65" height="65">
+      <input type="image" title="Cost: 15&#13;&#10;Damage: 25" onclick="changeSelection('ground2')" src="resources/tower-defense-turrets/turret-2-1.png"
+        width="65" height="65"> &nbsp;
+      <input type="image" title="Cost: 10&#13;&#10;Damage: 15" onclick="changeSelection('air1')" src="resources/tower-defense-turrets/turret-3-1.png"
+        width="65" height="65">
+      <input type="image" title="Cost: 25&#13;&#10;Damage: 35" onclick="changeSelection('air2')" src="resources/tower-defense-turrets/turret-5-1.png"
+        width="65" height="65">
+      <br> hover over image for stats
+      <br>
+      <br>
+      <br>
+      <div class="gameGui" id="level"></div>
+      <div class="gameGui" id="money"></div>
+      <div class="gameGui" id="lives"></div>
+      <div class="gameGui" id="score"></div>
+      <h2>Options:</h2>
+      <input type="button" onclick="toggleSound()" value="Toggle Sound">
+      <br>
+      <input type="button" onclick="toggleGrid()" value="Toggle Placement Grid">
+      <br>
+      <input type="button" onclick="toggleBounds()" value="Toggle Placement Radius">
+      <br>
+      <h2>Controls:</h2>
+      <div id="cont"></div>
+    </div>
+    <canvas id="canvas-main" width="900" height="900"></canvas>
+  </div>
+
+  <div id="highScores" class="menu">
+    <h1>High Scores</h1>
+    <div id="HSArray"></div>
+    <input type="button" onclick="showMainMenu()" value="MAIN MENU">
+  </div>
+
+  <div id="credits" class="menu">
+    <h1>Credits</h1>
+    <h2>Author: Jayden Thompson</h2>
+    <h2>Art: Silviu Ploisteanu (www.HireFreelanceArtist.com)</h2>
+    <input type="button" onclick="showMainMenu()" value="MAIN MENU">
+  </div>
+
+  <script type="text/javascript" src="highscores.json"></script>
+  <script src="scripts/game_graphics.js"></script>
+  <script src="scripts/game_pathfinding.js"></script>
+  <script src="scripts/game_units.js"></script>
+  <script src="scripts/game_particles.js"></script>
+  <script src="scripts/game_main.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+
 </html>
