@@ -27,6 +27,10 @@ Game.pathfinding = (function () {
                     pos: {
                         x: i,
                         y: j
+                    },
+                    center:{
+                        x: (i * 50) + 25,
+                        y: (j * 50) + 25
                     }
                 };
                 if(gameGrid[i][j] !== undefined){
@@ -43,6 +47,10 @@ Game.pathfinding = (function () {
                         pos: {
                             x: i,
                             y: j
+                        },
+                        center:{
+                            x: (i * 50) + 25,
+                            y: (j * 50) + 25
                         }
                     };
                     pathGrid[j][i] = {
@@ -51,6 +59,10 @@ Game.pathfinding = (function () {
                         pos: {
                             x: j,
                             y: i
+                        },
+                        center:{
+                            x: (j * 50) + 25,
+                            y: (i * 50) + 25
                         }
                     };
                 }

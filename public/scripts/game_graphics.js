@@ -242,7 +242,7 @@ Game.graphics = (function () {
         let optionsGui = document.getElementById('cont');
         optionsGui.innerHTML = "Upgrade: " + options[0] + "<br>";
         optionsGui.innerHTML += "Sell: " + options[1] + "<br>";
-        optionsGui.innerHTML += "Next Round: " + options[2] + "<br>";
+        optionsGui.innerHTML += "Next Level: " + options[2] + "<br>";
     }
 
     function drawGrid() {
@@ -322,7 +322,7 @@ Game.graphics = (function () {
         drawControls();
         
         // SHOW PATH NUMBERS FOR DEBUG
-        drawPath(objects.path);
+        //drawPath(objects.path);
 
         // Draw only if selecting spot for tower
         if (objects.select) {

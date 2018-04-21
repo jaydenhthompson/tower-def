@@ -82,7 +82,7 @@ function air_2(pos) {
     }
 }
 
-function ground_creep_1(pos, origin) {
+function ground_creep_1(pos, origin, current) {
     return {
         image: {
             render: "resources/creep/creep-1-red/1.png",
@@ -96,11 +96,13 @@ function ground_creep_1(pos, origin) {
         degree: 0,
         life: 100,
         type: 'ground',
-        origin: origin
+        origin: origin,
+        current: current,
+        goal: undefined
     }
 }
 
-function ground_creep_2(pos, origin) {
+function ground_creep_2(pos, origin, current) {
     return {
         image: {
             render: "resources/creep/creep-2-green/1.png",
@@ -114,11 +116,13 @@ function ground_creep_2(pos, origin) {
         degree: 0,
         life: 100,
         type: 'ground',
-        origin: origin
+        origin: origin,
+        current: current,
+        goal: undefined
     }
 }
 
-function air_creep(pos, origin) {
+function air_creep(pos, origin, current) {
     return {
         image: {
             render: "resources/creep/creep-3-blue/1.png",
@@ -132,7 +136,9 @@ function air_creep(pos, origin) {
         degree: 0,
         life: 100,
         type: 'air',
-        origin: origin
+        origin: origin,
+        current: current,
+        goal: undefined
     }
 }
 

@@ -16,17 +16,39 @@ Game.main = (function (graphics, pathfinder, particles) {
     // Game Main "global" objects //
     ////////////////////////////////
 
+    function leftPos() {
+        return { x: 25, y: 425 };
+    }
+    function leftOrigin() {
+        return 'left';
+    }
+    function leftCur() {
+        return { x: 0, y: 8 };
+    }
+
+    function topPos() {
+        return { x: 425, y: 25 };
+    }
+    function topOrigin() {
+        return 'top';
+    }
+
+    function topCur() {
+        return { x: 8, y: 0 };
+    }
+
     // VARIABLES
     let previousTime = performance.now();
     let currentMousePos = undefined;
     let selectionMode = false;
     let selectedTurret = undefined;
+    let curLevel = undefined;
     let run = true;
 
     // IN-GAME VARIABLES
     let money = 10000;
     let lives = 10;
-    let level = 1;
+    let level = 2;
     let score = 0;
 
     // CONSTANTS
@@ -36,6 +58,7 @@ Game.main = (function (graphics, pathfinder, particles) {
     let creeps = [];
     let projectiles = [];
     let creepScore = [];
+    let creepQueue = [];
     let leftPath = [];
     let topPath = [];
 
@@ -63,11 +86,11 @@ Game.main = (function (graphics, pathfinder, particles) {
     ////////////////////////////////////
 
     function keyPress(e) {
-        keyInput.keys[e.key] = e.timeStamp;
+        //keyInput.keys[e.key] = e.timeStamp;
     }
 
     function keyRelease(e) {
-        delete keyInput.keys[e.key];
+        keyInput.keys[e.key] = e.timeStamp;
     }
 
     function clickSelection(e) {
@@ -115,13 +138,13 @@ Game.main = (function (graphics, pathfinder, particles) {
     // Functions for placing units //
     /////////////////////////////////
 
-    function checkAndUpdatePaths(pos){
+    function checkAndUpdatePaths(pos) {
         tempLeftPath = pathfinder.findPath(gameGrid, { x: 0, y: 8 }, { x: COLS - 1, y: 8 });
-        tempRightPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 });
-        if(tempLeftPath.isPath && tempRightPath.isPath){
+        tempTopPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 });
+        if (tempLeftPath.isPath && tempTopPath.isPath) {
             leftPath = tempLeftPath.path;
-            rightPath = tempRightPath.path;
-        }else{
+            topPath = tempTopPath.path;
+        } else {
             gameGrid[pos.x][pos.y] = undefined;
             alert("CANNOT BLOCK PATH!!!");
         }
@@ -208,10 +231,15 @@ Game.main = (function (graphics, pathfinder, particles) {
         particles.explosion(selectedTurret.center, 'gray');
         gameGrid[selectedTurret.pos.x][selectedTurret.pos.y] = undefined;
         selectedTurret = undefined;
+        
+        leftPath = pathfinder.findPath(gameGrid, { x: 0, y: 8 }, { x: COLS - 1, y: 8 }).path;
+        topPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 }).path;
     }
 
     function startNextLevel() {
-
+        if (level === 3) return;
+        level += 1;
+        curLevel = levels[level - 1];
     }
 
     /////////////////////////////////////
@@ -234,6 +262,114 @@ Game.main = (function (graphics, pathfinder, particles) {
                 if (im.current >= im.number) im.current = 0;
                 im.render = im.base + (im.current + 1) + ".png";
             }
+        }
+    }
+
+    function guideCreep(sec, creep, direction) {
+        let use = undefined;
+        if (direction === 'left') use = leftPath;
+        else use = topPath;
+        let distFromGoal = use[creep.current.x][creep.current.y].distance;
+
+        if (creep.goal !== undefined) {
+            if (creep.pos.x === use[creep.goal.x][creep.goal.y].center.x && creep.pos.y === use[creep.goal.x][creep.goal.y].center.y) {
+                creep.current = creep.goal;
+                creep.goal = undefined;
+                distFromGoal = use[creep.current.x][creep.current.y].distance;
+            }
+        }
+
+        if(distFromGoal === 0 && direction === 'left'){
+            creep.degree = 0;
+            creep.pos.x += 100 * sec;
+        }else if(distFromGoal === 0 && direction === 'top'){
+            creep.degree = 1.5 * Math.PI;
+            creep.pos.y += 100 * sec;
+        }
+
+        if (creep.current.x > 0) {
+            if (use[creep.current.x - 1][creep.current.y] !== undefined) {
+                if (use[creep.current.x - 1][creep.current.y].distance === distFromGoal - 1) {
+                    creep.goal = { x: creep.current.x - 1, y: creep.current.y };
+                    creep.degree = Math.PI;
+                    if (Math.abs(creep.pos.x - use[creep.goal.x][creep.goal.y].center.x) < 5) {
+                        creep.pos.x = use[creep.goal.x][creep.goal.y].center.x
+                    } else {
+                        creep.pos.x -= 100 * sec;
+                    }
+                    return;
+                }
+            }
+        } if (creep.current.x < COLS - 1) {
+            if (use[creep.current.x + 1][creep.current.y] !== undefined) {
+                if (use[creep.current.x + 1][creep.current.y].distance === distFromGoal - 1) {
+                    creep.goal = { x: creep.current.x + 1, y: creep.current.y };
+                    creep.degree = 0;
+                    if (Math.abs(creep.pos.x - use[creep.goal.x][creep.goal.y].center.x) < 5) {
+                        creep.pos.x = use[creep.goal.x][creep.goal.y].center.x
+                    } else {
+                        creep.pos.x += 100 * sec;
+                    }
+                    return;
+                }
+            }
+        } if (creep.current.y > 0) {
+            if (use[creep.current.x][creep.current.y - 1] !== undefined) {
+                if (use[creep.current.x][creep.current.y - 1].distance === distFromGoal - 1) {
+                    creep.goal = { x: creep.current.x, y: creep.current.y - 1 };
+                    creep.degree = .5 * Math.PI;
+                    if (Math.abs(creep.pos.y - use[creep.goal.x][creep.goal.y].center.y) < 5) {
+                        creep.pos.y = use[creep.goal.x][creep.goal.y].center.y
+                    } else {
+                        creep.pos.y -= 100 * sec;
+                    }
+                    return;
+                }
+            }
+        } if (creep.current.y < ROWS - 1) {
+            if (use[creep.current.x][creep.current.y + 1] !== undefined) {
+                if (use[creep.current.x][creep.current.y + 1].distance === distFromGoal - 1) {
+                    creep.goal = { x: creep.current.x, y: creep.current.y + 1 };
+                    creep.degree = 1.5 * Math.PI;
+                    if (Math.abs(creep.pos.y - use[creep.goal.x][creep.goal.y].center.y) < 5) {
+                        creep.pos.y = use[creep.goal.x][creep.goal.y].center.y
+                    } else {
+                        creep.pos.y += 100 * sec;
+                    }
+                    return;
+                }
+            }
+        }
+
+    }
+
+    function updateCreepLocation(sec) {
+        for (let i = 0; i < creeps.length; i++) {
+
+            if (creeps[i].origin === 'left') {
+                if (creeps[i].type === 'air') {
+                    creeps[i].pos.x += 150 * sec;
+                } else {
+                    guideCreep(sec, creeps[i], 'left');
+                }
+            } else if (creeps[i].origin === 'top') {
+                creeps[i].degree = 1.5 * Math.PI;
+                if (creeps[i].type === 'air') {
+                    creeps[i].pos.y += 150 * sec;
+                } else {
+                    guideCreep(sec, creeps[i], 'top')
+                }
+            }
+        }
+    }
+
+    let timeTilNext = 1;
+    function launchCreeps(sec) {
+        if (!creepQueue.length) return;
+        timeTilNext -= sec;
+        if (timeTilNext <= 0) {
+            timeTilNext = 1;
+            creeps.push(creepQueue.shift());
         }
     }
 
@@ -455,6 +591,38 @@ Game.main = (function (graphics, pathfinder, particles) {
         showMainMenu();
     }
 
+    function getRand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function parseLevel() {
+        if (curLevel === undefined) return;
+        for (let i = 0; i < curLevel.left.ground_1; i++) {
+            creepQueue.push(ground_creep_1(leftPos(), leftOrigin(), leftCur()));
+        }
+        curLevel.left.ground_1 = 0;
+        for (let i = 0; i < curLevel.left.ground_2; i++) {
+            creepQueue.push(ground_creep_2(leftPos(), leftOrigin(), leftCur()));
+        }
+        curLevel.left.ground_2 = 0;
+        for (let i = 0; i < curLevel.left.air; i++) {
+            creepQueue.push(air_creep({ x: 25, y: getRand(100, 800) }, leftOrigin(), leftCur()));
+        }
+        curLevel.left.air = 0;
+        for (let i = 0; i < curLevel.top.ground_1; i++) {
+            creepQueue.push(ground_creep_1(topPos(), topOrigin(), topCur()));
+        }
+        curLevel.top.ground_1 = 0;
+        for (let i = 0; i < curLevel.top.ground_2; i++) {
+            creepQueue.push(ground_creep_2(topPos(), topOrigin(), topCur()));
+        }
+        curLevel.top.ground_2 = 0;
+        for (let i = 0; i < curLevel.top.air; i++) {
+            creepQueue.push(air_creep({ x: getRand(100, 800), y: 25 }, topOrigin(), topCur()));
+        }
+        curLevel.top.air = 0;
+    }
+
     /////////////////////////
     // Main Game Functions //
     /////////////////////////
@@ -464,6 +632,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         for (let key in keyInput.keys) {
             if (keyInput.handlers[key]) {
                 keyInput.handlers[key]();
+                delete keyInput.keys[key];
             }
         }
     }
@@ -473,10 +642,12 @@ Game.main = (function (graphics, pathfinder, particles) {
         updateProjectiles(elapsedTime / 1000);
         particles.update(elapsedTime / 1000);
         updateCreepScore(elapsedTime / 1000);
+        launchCreeps(elapsedTime / 1000);
         checkLives();
-
+        parseLevel();
         if (creeps.length) {
             updateCreepImages(elapsedTime / 1000);
+            updateCreepLocation(elapsedTime / 1000);
             checkCreeps();
         }
     }
@@ -494,7 +665,7 @@ Game.main = (function (graphics, pathfinder, particles) {
             level: level,
             score: score,
             creepPoints: creepScore,
-            path: rightPath
+            path: leftPath
         });
         particles.render();
     }
@@ -544,7 +715,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         initializeGameGrid();
         initializeKeys();
         leftPath = pathfinder.findPath(gameGrid, { x: 0, y: 8 }, { x: COLS - 1, y: 8 }).path;
-        rightPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 }).path;
+        topPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 }).path;
     }
 
     ////////////////////////////
