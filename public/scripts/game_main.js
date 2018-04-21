@@ -35,6 +35,9 @@ Game.main = (function (graphics, pathfinder, particles) {
     let gameGrid = [];
     let creeps = [];
     let projectiles = [];
+    let creepScore = [];
+    let leftPath = [];
+    let topPath = [];
 
     // OBJECTS
 
@@ -73,8 +76,8 @@ Game.main = (function (graphics, pathfinder, particles) {
             selectTurret();
             return;
         }
-        if (currentMousePos.x < 2 || currentMousePos.x >= COLS - 2 ||
-            currentMousePos.y < 2 || currentMousePos.y >= ROWS - 2) return;
+        if (currentMousePos.x < 1 || currentMousePos.x >= COLS - 1 ||
+            currentMousePos.y < 1 || currentMousePos.y >= ROWS - 1) return;
         if (gameGrid[currentMousePos.x][currentMousePos.y] !== undefined) return;
 
         // Check the type of tower selected
@@ -112,6 +115,18 @@ Game.main = (function (graphics, pathfinder, particles) {
     // Functions for placing units //
     /////////////////////////////////
 
+    function checkAndUpdatePaths(pos){
+        tempLeftPath = pathfinder.findPath(gameGrid, { x: 0, y: 8 }, { x: COLS - 1, y: 8 });
+        tempRightPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 });
+        if(tempLeftPath.isPath && tempRightPath.isPath){
+            leftPath = tempLeftPath.path;
+            rightPath = tempRightPath.path;
+        }else{
+            gameGrid[pos.x][pos.y] = undefined;
+            alert("CANNOT BLOCK PATH!!!");
+        }
+    }
+
     function placeGroundUnit1(pos) {
         if (money < 5) return;
         money -= 5;
@@ -119,6 +134,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         gameGrid[pos.x][pos.y] = ground_1(pos);
         currentSelection = undefined;
         selectionMode = false;
+        checkAndUpdatePaths(pos);
     }
 
     function placeGroundUnit2(pos) {
@@ -128,6 +144,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         gameGrid[pos.x][pos.y] = ground_2(pos);
         currentSelection = undefined;
         selectionMode = false;
+        checkAndUpdatePaths(pos);
     }
 
     function placeAirUnit1(pos) {
@@ -137,6 +154,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         gameGrid[pos.x][pos.y] = air_1(pos);
         currentSelection = undefined;
         selectionMode = false;
+        checkAndUpdatePaths(pos);
     }
 
     function placeAirUnit2(pos) {
@@ -146,6 +164,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         gameGrid[pos.x][pos.y] = air_2(pos);
         currentSelection = undefined;
         selectionMode = false;
+        checkAndUpdatePaths(pos);
     }
 
     ////////////////////////////////////
@@ -228,8 +247,13 @@ Game.main = (function (graphics, pathfinder, particles) {
                     audio.play();
                     particles.explosion(creeps[i].pos, 'green');
                 }
-                score += 5;
-                money += 5;
+                score += 10;
+                money += 10;
+                creepScore.push({
+                    time: 1,
+                    pos: creeps[i].pos,
+                    score: 10
+                });
                 creeps.splice(i, 1);
             } else if (creeps[i].pos.x >= WIDTH || creeps[i].pos.y >= HEIGHT) {
                 lives--;
@@ -384,6 +408,19 @@ Game.main = (function (graphics, pathfinder, particles) {
         }
     }
 
+    function updateCreepScore(sec) {
+        let keep = [];
+        for (let i = 0; i < creepScore.length; i++) {
+            let c = creepScore[i];
+            c.pos.y -= 50 * sec;
+            c.time -= sec;
+            if (c.time > 0) {
+                keep.push(c);
+            }
+        }
+        creepScore = keep;
+    }
+
     ////////////////////////////
     // General game functions //
     ////////////////////////////
@@ -431,34 +468,17 @@ Game.main = (function (graphics, pathfinder, particles) {
         }
     }
 
-    let wait = 4;
     function update(elapsedTime) {
         updateTurrets(elapsedTime / 1000);
         updateProjectiles(elapsedTime / 1000);
         particles.update(elapsedTime / 1000);
+        updateCreepScore(elapsedTime / 1000);
         checkLives();
 
         if (creeps.length) {
             updateCreepImages(elapsedTime / 1000);
             checkCreeps();
         }
-
-        ///// TEMP \\\\\
-        for (let i = 0; i < creeps.length; i++) {
-            creeps[i].pos.x += 100 * (elapsedTime / 1000);
-        }
-        if (wait <= 0) {
-            wait = 4;
-            placeGroundCreep2({
-                x: 0,
-                y: 450
-            });
-            placeAirCreep({
-                x: 0,
-                y: 400
-            });
-        }
-        wait -= (elapsedTime / 1000);
     }
 
     function render() {
@@ -472,7 +492,9 @@ Game.main = (function (graphics, pathfinder, particles) {
             projectiles: projectiles,
             lives: lives,
             level: level,
-            score: score
+            score: score,
+            creepPoints: creepScore,
+            path: rightPath
         });
         particles.render();
     }
@@ -521,6 +543,8 @@ Game.main = (function (graphics, pathfinder, particles) {
     function initialize() {
         initializeGameGrid();
         initializeKeys();
+        leftPath = pathfinder.findPath(gameGrid, { x: 0, y: 8 }, { x: COLS - 1, y: 8 }).path;
+        rightPath = pathfinder.findPath(gameGrid, { x: 8, y: 0 }, { x: 8, y: ROWS - 1 }).path;
     }
 
     ////////////////////////////

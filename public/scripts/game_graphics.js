@@ -64,9 +64,9 @@ Game.graphics = (function () {
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(WIDTH / 3, 0);
-        ctx.lineTo(WIDTH / 3, HEIGHT / 9);
-        ctx.lineTo(WIDTH / 9, HEIGHT / 9);
-        ctx.lineTo(WIDTH / 9, HEIGHT / 3);
+        ctx.lineTo(WIDTH / 3, HEIGHT / 18);
+        ctx.lineTo(WIDTH / 18, HEIGHT / 18);
+        ctx.lineTo(WIDTH / 18, HEIGHT / 3);
         ctx.lineTo(0, HEIGHT / 3);
         ctx.closePath();
         ctx.fillStyle = 'grey';
@@ -79,9 +79,9 @@ Game.graphics = (function () {
         ctx.beginPath();
         ctx.moveTo(WIDTH - 1, 0);
         ctx.lineTo(WIDTH - (WIDTH / 3), 0);
-        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT / 9);
-        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT / 9);
-        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT / 3);
+        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT / 18);
+        ctx.lineTo(WIDTH - (WIDTH / 18), HEIGHT / 18);
+        ctx.lineTo(WIDTH - (WIDTH / 18), HEIGHT / 3);
         ctx.lineTo(WIDTH - 1, HEIGHT / 3);
         ctx.closePath();
         ctx.fill();
@@ -91,9 +91,9 @@ Game.graphics = (function () {
         ctx.beginPath();
         ctx.moveTo(0, HEIGHT - 1);
         ctx.lineTo(WIDTH / 3, HEIGHT - 1);
-        ctx.lineTo(WIDTH / 3, HEIGHT - (HEIGHT / 9));
-        ctx.lineTo(WIDTH / 9, HEIGHT - (HEIGHT / 9));
-        ctx.lineTo(WIDTH / 9, HEIGHT - (HEIGHT / 3));
+        ctx.lineTo(WIDTH / 3, HEIGHT - (HEIGHT / 18));
+        ctx.lineTo(WIDTH / 18, HEIGHT - (HEIGHT / 18));
+        ctx.lineTo(WIDTH / 18, HEIGHT - (HEIGHT / 3));
         ctx.lineTo(0, HEIGHT - (HEIGHT / 3));
         ctx.closePath();
         ctx.fill();
@@ -103,9 +103,9 @@ Game.graphics = (function () {
         ctx.beginPath();
         ctx.moveTo(WIDTH - 1, HEIGHT - 1);
         ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT - 1);
-        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT - (HEIGHT / 9));
-        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT - (HEIGHT / 9));
-        ctx.lineTo(WIDTH - (WIDTH / 9), HEIGHT - (HEIGHT / 3));
+        ctx.lineTo(WIDTH - (WIDTH / 3), HEIGHT - (HEIGHT / 18));
+        ctx.lineTo(WIDTH - (WIDTH / 18), HEIGHT - (HEIGHT / 18));
+        ctx.lineTo(WIDTH - (WIDTH / 18), HEIGHT - (HEIGHT / 3));
         ctx.lineTo(WIDTH - 1, HEIGHT - (HEIGHT / 3));
         ctx.closePath();
         ctx.fill();
@@ -209,6 +209,15 @@ Game.graphics = (function () {
         }
     }
 
+    function drawCreepScore(scores) {
+        for (let i = 0; i < scores.length; i++) {
+            ctx.font = "20px Ariel";
+            ctx.fillStyle = 'yellow';
+            ctx.textAlign = 'center';
+            ctx.fillText(scores[i].score.toString(), scores[i].pos.x, scores[i].pos.y);
+        }
+    }
+
     function drawLevel(level) {
         let levelGui = document.getElementById('level');
         levelGui.innerHTML = "Level: " + level;
@@ -240,13 +249,13 @@ Game.graphics = (function () {
         if (!show_grid) return;
         ctx.beginPath();
         //draw vertical lines
-        for (let i = 2; i < COLS - 1; i++) {
+        for (let i = 1; i < COLS; i++) {
             ctx.moveTo(WIDTH * (i / COLS), 0);
             ctx.lineTo(WIDTH * (i / COLS), HEIGHT - 1);
         }
 
         //draw horizontal lines
-        for (let i = 2; i < ROWS - 1; i++) {
+        for (let i = 1; i < ROWS; i++) {
             ctx.moveTo(0, HEIGHT * (i / ROWS));
             ctx.lineTo(WIDTH - 1, HEIGHT * (i / ROWS));
         }
@@ -266,7 +275,7 @@ Game.graphics = (function () {
 
     function highlightSquare(mouse) {
         if (!mouse || !currentSelection) return;
-        if (mouse.x < 2 || mouse.x >= (WIDTH / 50) - 2 || mouse.y < 2 || mouse.y >= (HEIGHT / 50) - 2) return;
+        if (mouse.x < 1 || mouse.x >= (WIDTH / 50) - 1 || mouse.y < 1 || mouse.y >= (HEIGHT / 50) - 1) return;
         x = mouse.x * 50;
         y = mouse.y * 50;
         ctx.fillStyle = 'rgba(255, 0, 0, .4)';
@@ -278,6 +287,18 @@ Game.graphics = (function () {
             ctx.lineWidth = 3;
             ctx.arc(x + ((WIDTH / COLS) / 2), y + ((HEIGHT / ROWS) / 2), findRadius(), 0, 2 * Math.PI);
             ctx.stroke();
+        }
+    }
+
+    function drawPath(path) {
+        for (let i = 0; i < path.length; i++) {
+            for (let j = 0; j < path[i].length; j++) {
+                if (path[i][j] === undefined) continue;
+                ctx.font = "20px Ariel";
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.fillText(path[i][j].distance.toString(), (50 * i) + 25, (50 * j) + 25)
+            }
         }
     }
 
@@ -293,11 +314,15 @@ Game.graphics = (function () {
         drawProjectiles(objects.projectiles);
         drawUnits(objects.gameGrid);
         drawCreeps(objects.creeps);
+        drawCreepScore(objects.creepPoints);
         drawLevel(objects.level);
         drawMoney(objects.money);
         drawLives(objects.lives);
         drawScore(objects.score);
         drawControls();
+        
+        // SHOW PATH NUMBERS FOR DEBUG
+        drawPath(objects.path);
 
         // Draw only if selecting spot for tower
         if (objects.select) {
