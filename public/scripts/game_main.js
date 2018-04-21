@@ -393,7 +393,7 @@ Game.main = (function (graphics, pathfinder, particles) {
         if (!creepQueue.length) return;
         timeTilNext -= sec;
         if (timeTilNext <= 0) {
-            timeTilNext = 1.5;
+            timeTilNext = 1.5 / level;
             creeps.push(creepQueue.shift());
         }
     }
@@ -417,6 +417,7 @@ Game.main = (function (graphics, pathfinder, particles) {
                     score: temp
                 });
                 creeps.splice(i, 1);
+                checkStatus();
             } else if (creeps[i].pos.x >= WIDTH || creeps[i].pos.y >= HEIGHT) {
                 lives--;
                 creeps.splice(i, 1);
