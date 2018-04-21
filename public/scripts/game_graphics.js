@@ -273,9 +273,10 @@ Game.graphics = (function () {
         if (currentSelection === 'air2') return 200;
     }
 
-    function highlightSquare(mouse) {
+    function highlightSquare(mouse, grid) {
         if (!mouse || !currentSelection) return;
         if (mouse.x < 1 || mouse.x >= (WIDTH / 50) - 1 || mouse.y < 1 || mouse.y >= (HEIGHT / 50) - 1) return;
+        if (grid[mouse.x][mouse.y] !== undefined) return;
         x = mouse.x * 50;
         y = mouse.y * 50;
         ctx.fillStyle = 'rgba(255, 0, 0, .4)';
@@ -320,14 +321,14 @@ Game.graphics = (function () {
         drawLives(objects.lives);
         drawScore(objects.score);
         drawControls();
-        
+
         // SHOW PATH NUMBERS FOR DEBUG
         //drawPath(objects.path);
 
         // Draw only if selecting spot for tower
         if (objects.select) {
             drawGrid();
-            highlightSquare(objects.mouse);
+            highlightSquare(objects.mouse, objects.gameGrid);
         }
     }
 
