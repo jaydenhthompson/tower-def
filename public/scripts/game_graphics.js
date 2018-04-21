@@ -196,7 +196,7 @@ Game.graphics = (function () {
         }
 
         // Draw health bar
-        let percent = creep.life / 100;
+        let percent = creep.life / creep.maxLife;
         ctx.fillStyle = 'rgb(81, 81, 81)';
         ctx.fillRect(x, y - 7, CELL_WIDTH, 5);
         ctx.fillStyle = 'rgb(61, 135, 255)';
