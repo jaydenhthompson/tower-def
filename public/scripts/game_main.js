@@ -146,6 +146,7 @@ Game.main = (function (graphics, pathfinder, particles) {
 
             if (creep_x === x && creep_y === y) return true;
             if (creep.goal.x === x && creep.goal.y === y) return true;
+            if (creep.current.x === x && creep.current.y === y) return true;
         }
         return false;
     }
@@ -281,7 +282,13 @@ Game.main = (function (graphics, pathfinder, particles) {
         let use = undefined;
         if (direction === 'left') use = leftPath;
         else use = topPath;
-        let distFromGoal = use[creep.current.x][creep.current.y].distance;
+        let distFromGoal = undefined;
+
+        if(use[creep.current.x][creep.current.y] !== undefined){
+            distFromGoal = use[creep.current.x][creep.current.y].distance;
+        }else{
+            if(creep.goal) creep.current = creep.goal;
+        }
 
         if (creep.goal !== undefined) {
             if (use[creep.goal.x][creep.goal.y] !== undefined) {
@@ -381,12 +388,12 @@ Game.main = (function (graphics, pathfinder, particles) {
         }
     }
 
-    let timeTilNext = 1;
+    let timeTilNext = 1.5;
     function launchCreeps(sec) {
         if (!creepQueue.length) return;
         timeTilNext -= sec;
         if (timeTilNext <= 0) {
-            timeTilNext = 1;
+            timeTilNext = 1.5;
             creeps.push(creepQueue.shift());
         }
     }
@@ -401,12 +408,13 @@ Game.main = (function (graphics, pathfinder, particles) {
                     audio.play();
                     particles.explosion(creeps[i].pos, 'green');
                 }
-                score += 10;
-                money += 10;
+                let temp = creeps[i].score;
+                score += temp;
+                money += temp;
                 creepScore.push({
                     time: 1,
                     pos: creeps[i].pos,
-                    score: 10
+                    score: temp
                 });
                 creeps.splice(i, 1);
             } else if (creeps[i].pos.x >= WIDTH || creeps[i].pos.y >= HEIGHT) {

@@ -94,7 +94,9 @@ function ground_creep_1(pos, origin, current) {
         },
         pos: pos,
         degree: 0,
+        maxLife: 100,
         life: 100,
+        score: 10,
         type: 'ground',
         origin: origin,
         current: current,
@@ -114,7 +116,9 @@ function ground_creep_2(pos, origin, current) {
         },
         pos: pos,
         degree: 0,
-        life: 100,
+        maxLife: 175,
+        life: 175,
+        score: 15,
         type: 'ground',
         origin: origin,
         current: current,
@@ -134,7 +138,9 @@ function air_creep(pos, origin, current) {
         },
         pos: pos,
         degree: 0,
+        maxLife: 100,
         life: 100,
+        score: 20,
         type: 'air',
         origin: origin,
         current: current,
@@ -143,40 +149,40 @@ function air_creep(pos, origin, current) {
 }
 
 let level_1 = {
-    left:{
+    left: {
         ground_1: 10,
-        ground_2: 10, 
+        ground_2: 10,
         air: 0
     },
-    top:{
+    top: {
         ground_1: 0,
-        ground_2: 0, 
+        ground_2: 0,
         air: 0
     }
 }
 
 let level_2 = {
-    left:{
+    left: {
         ground_1: 20,
-        ground_2: 20, 
+        ground_2: 20,
         air: 0
     },
-    top:{
+    top: {
         ground_1: 20,
-        ground_2: 20, 
+        ground_2: 20,
         air: 0
     }
 }
 
 let level_3 = {
-    left:{
+    left: {
         ground_1: 20,
-        ground_2: 20, 
+        ground_2: 20,
         air: 10
     },
-    top:{
+    top: {
         ground_1: 25,
-        ground_2: 25, 
+        ground_2: 25,
         air: 10
     }
 }
